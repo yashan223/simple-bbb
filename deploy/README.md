@@ -38,8 +38,8 @@ If using Nginx as your web server / SSL terminator:
 
 1. Copy configuration:
    ```bash
-   sudo cp deploy/nginx.conf /etc/nginx/sites-available/pulseedu.conf
-   sudo ln -s /etc/nginx/sites-available/pulseedu.conf /etc/nginx/sites-enabled/
+   sudo cp deploy/meeting.pulseedu.online.conf /etc/nginx/sites-available/meeting.pulseedu.online.conf
+   sudo ln -s /etc/nginx/sites-available/meeting.pulseedu.online.conf /etc/nginx/sites-enabled/
    ```
 2. Generate SSL with Certbot:
    ```bash
