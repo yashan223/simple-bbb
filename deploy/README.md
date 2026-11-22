@@ -114,6 +114,7 @@ To brand the BigBlueButton logout and session ended landing page (`classroom.pul
 
 ```bash
 sudo cp /var/www/simple-bbb/deploy/bbb-index.html /var/www/bigbluebutton-default/index.html
+sudo cp /var/www/simple-bbb/public/logo-wide.png /var/www/bigbluebutton-default/logo-wide.png
 ```
 
 ---

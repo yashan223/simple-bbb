@@ -91,6 +91,7 @@ export async function createBBBMeeting({
     attendeePW: attendeePassword,
     moderatorPW: moderatorPassword,
     welcome: welcomeMessage || `Welcome to ${name}!`,
+    logoutURL: process.env.NEXTAUTH_URL || 'https://meeting.pulseedu.online',
     record: isRecorded ? 'true' : 'false',
     autoStartRecording: isRecorded ? 'true' : 'false',
     allowStartStopRecording: 'true',
@@ -269,6 +270,10 @@ export async function getBBBRecordings(meetingId?: string): Promise<BBBRecording
       const urlMatch = block.match(/<url>([^<]+)<\/url>/)
       const lengthMatch = block.match(/<length>([^<]+)<\/length>/)
 
+      if (stateMatch && (stateMatch[1] === 'deleted' || stateMatch[1] === 'unprocessed_dismissed')) {
+        continue
+      }
+
       if (recordIdMatch && meetingIdMatch) {
         recordings.push({
           recordId: recordIdMatch[1],
@@ -296,7 +301,11 @@ export async function deleteBBBRecording(recordId: string): Promise<boolean> {
   try {
     const res = await fetch(url)
     const xml = await res.text()
-    return xml.includes('<returncode>SUCCESS</returncode>')
+    return (
+      xml.includes('<returncode>SUCCESS</returncode>') ||
+      xml.includes('<messageKey>notFound</messageKey>') ||
+      xml.includes('We could not find recordings')
+    )
   } catch (error) {
     console.error('Failed to delete BBB recording:', error)
     return false

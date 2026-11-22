@@ -87,8 +87,10 @@
 </head>
 <body>
     <div class="card">
-        <img src="https://meeting.pulseedu.online/logo-wide.png" alt="PulseEdu" class="logo-img" onerror="this.src='/logo-wide.png'" />
+        <img src="/logo-wide.png" alt="PulseEdu" class="logo-img" onerror="this.src='https://meeting.pulseedu.online/logo-wide.png'" />
         
+        <h2 id="card-heading" style="font-size: 20px; font-weight: 700; color: #0f172a; margin-bottom: 14px;">Session Ended</h2>
+
         <div id="reason-container" class="reason-box" style="display: none;"></div>
 
         <div id="error-container" style="display: none;"></div>
@@ -99,10 +101,13 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const reason = urlParams.get('reason');
+        const headingEl = document.getElementById('card-heading');
         if (reason) {
             const reasonEl = document.getElementById('reason-container');
             reasonEl.innerText = reason;
             reasonEl.style.display = 'block';
+        } else if (!urlParams.get('errors')) {
+            headingEl.innerText = 'PulseEdu Virtual Classroom';
         }
 
         const errorsParam = urlParams.get('errors');
