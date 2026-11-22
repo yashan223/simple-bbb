@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/bbb-web
+WorkingDirectory=/var/www/simple-bbb
 ExecStart=/usr/bin/npm run start
 Restart=always
 RestartSec=5
