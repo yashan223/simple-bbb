@@ -3,7 +3,6 @@ import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/dal'
 import { getBBBRecordings } from '@/lib/bbb'
 
-// GET /api/admin/recordings - List only recordings created through PulseEdu
 export async function GET() {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -11,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    // 1. Fetch meeting IDs created in this PulseEdu instance
+
     const meetings = await prisma.meeting.findMany({
       select: { meetingId: true, name: true },
     })
@@ -21,11 +20,8 @@ export async function GET() {
       meetingMap.set(m.meetingId, m.name)
     }
 
-    // 2. Query BigBlueButton for recordings
     const allRecordings = await getBBBRecordings()
 
-    // 3. Filter strictly: ONLY include recordings that belong to meetings created through PulseEdu
-    // This removes all external/foreign recordings from other users on the server
     const pulseRecordings = allRecordings
       .filter((rec) => meetingMap.has(rec.meetingId) || rec.meetingId.startsWith('pulse-'))
       .map((rec) => ({

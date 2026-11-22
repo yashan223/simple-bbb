@@ -1,6 +1,3 @@
-/**
- * Verification Script for Authentication and Admin-Only Accounts
- */
 
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
@@ -12,7 +9,6 @@ const prisma = new PrismaClient()
 async function runTests() {
   console.log('--- Starting Authentication & Admin Verification ---')
 
-  // 1. Verify Prisma User model has no role column
   console.log('\n[TEST 1] Verifying User Model Schema...')
   const testUser = await prisma.user.findFirst()
   if (testUser) {
@@ -26,7 +22,6 @@ async function runTests() {
     throw new Error('FAILURE: No user in database')
   }
 
-  // 2. Verify Password Hashing with Bcrypt
   console.log('\n[TEST 2] Verifying Password Hashing...')
   const password = 'AdminPassword123!'
   const match = await bcrypt.compare(password, testUser.passwordHash)
@@ -39,7 +34,6 @@ async function runTests() {
   }
   console.log('✓ SUCCESS: Password hashing with bcrypt works securely.')
 
-  // 3. Verify Session Encryption & Decryption
   console.log('\n[TEST 3] Verifying Session Token Encryption & Decryption...')
   const payload = {
     userId: testUser.id,
@@ -57,7 +51,6 @@ async function runTests() {
   }
   console.log('✓ SUCCESS: Session encryption, signing, and verification work properly.')
 
-  // 4. Verify Admin Can Create Additional Admin Accounts
   console.log('\n[TEST 4] Verifying Admin Creation of Additional Admins...')
   const testSecondaryEmail = `secondary_${Date.now()}@pulseedu.com`
   const newPasswordHash = await bcrypt.hash('SecondAdminPass2026!', 12)
@@ -73,10 +66,8 @@ async function runTests() {
   }
   console.log('✓ SUCCESS: Authenticated admin can create additional admin accounts.')
 
-  // Clean up secondary test admin
   await prisma.user.delete({ where: { id: secondaryAdmin.id } })
 
-  // 5. Verify BigBlueButton URL & Checksum Generation
   console.log('\n[TEST 5] Verifying BBB API Checksum & Join URL...')
   const meetingId = 'pulse-test-meeting-101'
   const moderatorJoinUrl = getBBBJoinUrl({

@@ -10,7 +10,6 @@ const CreateAdminSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters long'),
 })
 
-// GET /api/admin/users - List all admin accounts (requires authenticated admin)
 export async function GET() {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -41,14 +40,12 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/users - Create additional admin account (ONLY default admin can do this)
 export async function POST(request: Request) {
   const auth = await verifyAdminSession()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 })
   }
 
-  // Strictly enforce: Only the default administrator can add/provision new admins!
   if (!auth.user.isDefaultAdmin) {
     return NextResponse.json(
       { error: 'Forbidden: Only the primary default administrator can add or provision administrator accounts.' },

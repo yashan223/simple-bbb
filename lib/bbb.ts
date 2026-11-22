@@ -50,7 +50,6 @@ export function buildBBBUrl(
   return `${url}/${action}?${searchParams.toString()}`
 }
 
-// 1-page blank PDF (16:9 1920x1080) encoded in Base64 to override default BBB marketing slides
 const BLANK_WHITEBOARD_PDF_BASE64 =
   'JVBERi0xLjQKMSAwIG9iaiA8PC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUj4+IGVuZG9iagoyIDAgb2JqIDw8L1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDE+PiBlbmRvYmoKMyAwIG9iaiA8PC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL01lZGlhQm94IFswIDAgMTkyMCAxMDgwXSAvUmVzb3VyY2VzIDw8Pj4+PiBlbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyIDw8L1NpemUgNCAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoyMDgKJSVFT0YK'
 
@@ -82,7 +81,6 @@ export async function createBBBMeeting({
     meetingExpireWhenLastUserLeftInMinutes: 3,
   })
 
-  // Pre-load clean blank whiteboard presentation to replace BBB default branded slides
   const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <module name="presentation">
@@ -152,9 +150,6 @@ export async function endBBBMeeting({
   }
 }
 
-/**
- * Checks if a meeting is actively running on BigBlueButton
- */
 export async function isBBBMeetingRunning(meetingId: string): Promise<boolean> {
   const url = buildBBBUrl('isMeetingRunning', { meetingID: meetingId })
   try {
@@ -168,9 +163,6 @@ export async function isBBBMeetingRunning(meetingId: string): Promise<boolean> {
   }
 }
 
-/**
- * Gets live meeting info from BigBlueButton
- */
 export async function getBBBMeetingInfo(meetingId: string): Promise<{
   success: boolean
   running: boolean

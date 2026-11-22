@@ -6,7 +6,6 @@ interface RouteContext {
   params: Promise<{ meetingId: string }>
 }
 
-// GET /api/meetings/[meetingId]/public-info
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params

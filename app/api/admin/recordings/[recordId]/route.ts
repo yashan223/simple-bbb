@@ -6,7 +6,6 @@ interface RouteContext {
   params: Promise<{ recordId: string }>
 }
 
-// DELETE /api/admin/recordings/[recordId] - Delete a recording from BigBlueButton
 export async function DELETE(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {

@@ -42,7 +42,6 @@ export async function POST(request: Request) {
       )
     }
 
-    // Set secure HTTP-only session cookie
     await createSession(user.id, user.email)
 
     return NextResponse.json({

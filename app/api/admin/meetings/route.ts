@@ -15,7 +15,6 @@ const CreateMeetingSchema = z.object({
   isRecorded: z.boolean().optional().default(false),
 })
 
-// GET /api/admin/meetings - List all meetings
 export async function GET() {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -34,7 +33,6 @@ export async function GET() {
   }
 }
 
-// POST /api/admin/meetings - Create meeting
 export async function POST(request: Request) {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -57,7 +55,6 @@ export async function POST(request: Request) {
     const attendeePassword = data.attendeePassword?.trim() || `att-${crypto.randomBytes(3).toString('hex')}`
     const moderatorPassword = data.moderatorPassword?.trim() || `mod-${crypto.randomBytes(4).toString('hex')}`
 
-    // Pre-create or initialize meeting on BigBlueButton server
     await createBBBMeeting({
       meetingId,
       name: data.name,

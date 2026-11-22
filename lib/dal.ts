@@ -10,24 +10,15 @@ export interface AdminUser {
   isDefaultAdmin: boolean
 }
 
-/**
- * Returns the configured default admin email (lowercased)
- */
 export function getDefaultAdminEmail(): string {
   return (process.env.DEFAULT_ADMIN_EMAIL || 'admin@pulseedu.online').toLowerCase().trim()
 }
 
-/**
- * Checks if a given email belongs to the primary default administrator
- */
 export function isDefaultAdmin(email: string | null | undefined): boolean {
   if (!email) return false
   return email.toLowerCase().trim() === getDefaultAdminEmail()
 }
 
-/**
- * Data Access Layer helper: validates session and returns current admin
- */
 export const verifyAdminSession = cache(async (): Promise<{ isAuth: true; user: AdminUser } | null> => {
   const session = await getSession()
   if (!session?.userId) {
@@ -62,9 +53,6 @@ export const verifyAdminSession = cache(async (): Promise<{ isAuth: true; user: 
   }
 })
 
-/**
- * Ensures caller is an authenticated admin, throwing an error if unauthenticated
- */
 export async function requireAdmin(): Promise<AdminUser> {
   const auth = await verifyAdminSession()
   if (!auth) {

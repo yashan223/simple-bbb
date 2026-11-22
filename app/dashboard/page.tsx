@@ -79,7 +79,6 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<'meetings' | 'recordings' | 'admins'>('meetings')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
-  // Meetings state
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [showCreateMeeting, setShowCreateMeeting] = useState(false)
   const [meetingName, setMeetingName] = useState('')
@@ -92,11 +91,9 @@ export default function DashboardPage() {
   const activeMeetings = meetings.filter((m) => !m.isEnded)
   const endedMeetings = meetings.filter((m) => m.isEnded)
 
-  // Recordings state
   const [recordings, setRecordings] = useState<Recording[]>([])
   const [recordingsLoading, setRecordingsLoading] = useState(false)
 
-  // Admins state
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [showCreateAdmin, setShowCreateAdmin] = useState(false)
   const [newAdminName, setNewAdminName] = useState('')
@@ -106,7 +103,6 @@ export default function DashboardPage() {
   const [adminError, setAdminError] = useState<string | null>(null)
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null)
 
-  // Edit Admin state
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null)
   const [editAdminName, setEditAdminName] = useState('')
   const [editAdminPassword, setEditAdminPassword] = useState('')
@@ -114,10 +110,8 @@ export default function DashboardPage() {
   const [editAdminError, setEditAdminError] = useState<string | null>(null)
   const [editAdminSuccess, setEditAdminSuccess] = useState<string | null>(null)
 
-  // Copy feedback
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
-  // Confirmation Modal state
   const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
     isOpen: false,
     title: '',
@@ -133,7 +127,7 @@ export default function DashboardPage() {
   async function fetchInitialData() {
     setLoading(true)
     try {
-      // 1. Verify user session
+
       const meRes = await fetch('/api/auth/me')
       if (!meRes.ok) {
         router.push('/login')
@@ -142,17 +136,14 @@ export default function DashboardPage() {
       const meData = await meRes.json()
       setCurrentUser(meData.user)
 
-      // 2. Fetch meetings
       const meetingsRes = await fetch('/api/admin/meetings')
       if (meetingsRes.ok) {
         const meetingsData = await meetingsRes.json()
         setMeetings(meetingsData.meetings || [])
       }
 
-      // 3. Fetch recordings
       fetchRecordings()
 
-      // 4. Fetch admins
       const adminsRes = await fetch('/api/admin/users')
       if (adminsRes.ok) {
         const adminsData = await adminsRes.json()
@@ -229,7 +220,6 @@ export default function DashboardPage() {
     }
   }
 
-  // Host Option: End Live Meeting for everyone
   function promptEndMeeting(meeting: Meeting) {
     setConfirmModal({
       isOpen: true,
@@ -411,12 +401,10 @@ export default function DashboardPage() {
 
       setEditAdminSuccess('Administrator updated successfully')
 
-      // Update state in admin list
       setAdmins((prev) =>
         prev.map((a) => (a.id === editingAdmin.id ? { ...a, name: editAdminName.trim() } : a))
       )
 
-      // If current user updated their own account, update currentUser too
       if (currentUser?.id === editingAdmin.id) {
         setCurrentUser((prev) => (prev ? { ...prev, name: editAdminName.trim() } : null))
       }
@@ -474,7 +462,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans">
-      {/* Confirmation Modal */}
+
       {confirmModal.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
           <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
@@ -520,7 +508,6 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
@@ -528,14 +515,13 @@ export default function DashboardPage() {
         />
       )}
 
-      {/* LEFT SIDE PANEL (SIDEBAR) */}
       <aside
         className={`fixed md:static inset-y-0 left-0 z-50 w-64 md:w-72 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col flex-1 min-h-0">
-          {/* Sidebar Brand Header */}
+
           <div className="h-20 px-6 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center py-2">
               <Image
@@ -556,13 +542,11 @@ export default function DashboardPage() {
             </button>
           </div>
 
-          {/* Sidebar Nav Items */}
           <nav className="p-4 space-y-1.5 flex-1 overflow-y-auto">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3 pb-2">
               Management
             </div>
 
-            {/* Meetings Tab */}
             <button
               onClick={() => {
                 setActiveTab('meetings')
@@ -589,7 +573,6 @@ export default function DashboardPage() {
               </span>
             </button>
 
-            {/* Recordings Tab */}
             <button
               onClick={() => {
                 setActiveTab('recordings')
@@ -616,7 +599,6 @@ export default function DashboardPage() {
               </span>
             </button>
 
-            {/* Admin Accounts Tab */}
             <button
               onClick={() => {
                 setActiveTab('admins')
@@ -645,7 +627,6 @@ export default function DashboardPage() {
           </nav>
         </div>
 
-        {/* Sidebar Footer User & Logout */}
         <div className="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-indigo-200 flex-shrink-0">
@@ -685,9 +666,8 @@ export default function DashboardPage() {
         </div>
       </aside>
 
-      {/* RIGHT MAIN PANEL */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
-        {/* Main Header Bar */}
+
         <header className="h-20 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xs shadow-xs">
           <div className="flex items-center gap-3">
             <button
@@ -759,13 +739,12 @@ export default function DashboardPage() {
           </div>
         </header>
 
-        {/* Scrollable Dashboard Body */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 bg-slate-50">
           <div className="max-w-6xl mx-auto space-y-6">
-            {/* TAB 1: MEETINGS */}
+
             {activeTab === 'meetings' && (
               <div className="space-y-6">
-                {/* Create Meeting Modal / Card */}
+
                 {showCreateMeeting && (
                   <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md relative animate-in fade-in">
                     <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -863,7 +842,6 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Active Meetings List */}
                 {activeMeetings.length === 0 ? (
                   <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-xs">
                     <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mx-auto mb-4">
@@ -943,7 +921,6 @@ export default function DashboardPage() {
                               )}
                             </button>
 
-                            {/* Host Option: End Meeting */}
                             <button
                               onClick={() => promptEndMeeting(meeting)}
                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-700 text-xs font-semibold border border-amber-200 hover:border-rose-200 transition cursor-pointer"
@@ -990,7 +967,6 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Past Concluded Sessions (if any) */}
                 {endedMeetings.length > 0 && (
                   <div className="pt-6 border-t border-slate-200 space-y-3">
                     <h5 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
@@ -1045,7 +1021,6 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* TAB 2: RECORDINGS */}
             {activeTab === 'recordings' && (
               <div className="space-y-6">
                 {recordings.length === 0 ? (
@@ -1151,10 +1126,9 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* TAB 3: ADMIN ACCOUNTS */}
             {activeTab === 'admins' && (
               <div className="space-y-6">
-                {/* Non-default admin notice */}
+
                 {!currentUser?.isDefaultAdmin && (
                   <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-3">
                     <Lock className="w-4 h-4 text-amber-600 shrink-0" />
@@ -1164,7 +1138,6 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Create Admin Form (Default Admin Only) */}
                 {showCreateAdmin && currentUser?.isDefaultAdmin && (
                   <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md animate-in fade-in">
                     <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
@@ -1252,7 +1225,6 @@ export default function DashboardPage() {
                   </div>
                 )}
 
-                {/* Admin Accounts Table */}
                 <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                   <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
                     <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -1367,7 +1339,6 @@ export default function DashboardPage() {
         </main>
       </div>
 
-      {/* Edit Admin Modal */}
       {editingAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">

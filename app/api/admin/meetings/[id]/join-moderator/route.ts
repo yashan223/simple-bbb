@@ -7,7 +7,6 @@ interface RouteContext {
   params: Promise<{ id: string }>
 }
 
-// GET /api/admin/meetings/[id]/join-moderator - Get moderator join URL (admin only)
 export async function GET(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -24,7 +23,6 @@ export async function GET(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // If meeting was ended by host, don't allow joining
     if (meeting.isEnded) {
       return NextResponse.json(
         { error: 'This meeting has ended and cannot be rejoined. Please create a new meeting.' },
@@ -32,7 +30,6 @@ export async function GET(request: Request, context: RouteContext) {
       )
     }
 
-    // Ensure meeting exists on BBB
     await createBBBMeeting({
       meetingId: meeting.meetingId,
       name: meeting.name,

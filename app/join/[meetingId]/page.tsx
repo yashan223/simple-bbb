@@ -40,7 +40,6 @@ export default function JoinMeetingPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Form states
   const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
   const [joining, setJoining] = useState(false)
@@ -59,7 +58,7 @@ export default function JoinMeetingPage() {
         }
 
         setMeeting(data)
-        // If current visitor is authenticated as admin, pre-fill their name
+
         if (data.isAuthenticated && data.adminUser?.name) {
           setDisplayName(data.adminUser.name)
         }
@@ -99,7 +98,6 @@ export default function JoinMeetingPage() {
         return
       }
 
-      // Redirect directly to BigBlueButton join URL
       if (data.joinUrl) {
         window.location.href = data.joinUrl
       } else {
@@ -148,7 +146,6 @@ export default function JoinMeetingPage() {
     )
   }
 
-  // If meeting was ended by the host: block rejoining completely!
   if (meeting.isEnded) {
     return (
       <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4">
@@ -211,7 +208,7 @@ export default function JoinMeetingPage() {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white border border-slate-200 py-8 px-6 shadow-xl rounded-2xl sm:px-10 space-y-6">
-          {/* Meeting Details Card */}
+
           <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-slate-500 font-medium">Session Topic:</span>
@@ -230,7 +227,6 @@ export default function JoinMeetingPage() {
             )}
           </div>
 
-          {/* Host vs Guest Status Banner */}
           {isHost ? (
             <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-xs space-y-1.5">
               <div className="flex items-center justify-between">
@@ -289,7 +285,6 @@ export default function JoinMeetingPage() {
               </div>
             </div>
 
-            {/* Guests only see password if meeting requires password and user is NOT the host */}
             {!isHost && meeting.hasPassword && (
               <div>
                 <label

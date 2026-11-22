@@ -7,7 +7,6 @@ interface RouteContext {
   params: Promise<{ id: string }>
 }
 
-// DELETE /api/admin/meetings/[id] - End and remove meeting
 export async function DELETE(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -24,7 +23,6 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // Try to end running meeting on BBB server
     try {
       await endBBBMeeting({
         meetingId: meeting.meetingId,

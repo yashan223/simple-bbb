@@ -13,7 +13,6 @@ const UpdateAdminSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters long').optional(),
 })
 
-// PATCH /api/admin/users/[id] - Edit an admin account
 export async function PATCH(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -37,7 +36,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'No fields provided for update' }, { status: 400 })
     }
 
-    // Find the target admin to be edited
     const targetAdmin = await prisma.user.findUnique({
       where: { id },
     })
@@ -49,7 +47,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     const targetIsDefaultAdmin = isDefaultAdmin(targetAdmin.email)
     const callerIsDefaultAdmin = auth.user.isDefaultAdmin
 
-    // RULE 1: If the target is the default admin, ONLY the default admin can edit it!
     if (targetIsDefaultAdmin && !callerIsDefaultAdmin) {
       return NextResponse.json(
         { error: 'Forbidden: Only the primary default administrator can edit the default admin account.' },
@@ -57,7 +54,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       )
     }
 
-    // RULE 2: If the caller is NOT the default admin, they can ONLY edit their own account
     if (!callerIsDefaultAdmin && auth.user.id !== targetAdmin.id) {
       return NextResponse.json(
         { error: 'Forbidden: You do not have permission to edit other administrator accounts.' },
@@ -98,14 +94,12 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-// DELETE /api/admin/users/[id] - Remove a secondary admin account (default admin only)
 export async function DELETE(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 })
   }
 
-  // Only default admin can delete admin accounts
   if (!auth.user.isDefaultAdmin) {
     return NextResponse.json(
       { error: 'Forbidden: Only the primary default administrator can remove administrator accounts.' },
@@ -124,7 +118,6 @@ export async function DELETE(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Admin account not found' }, { status: 404 })
     }
 
-    // Cannot delete the default admin
     if (isDefaultAdmin(targetAdmin.email)) {
       return NextResponse.json(
         { error: 'Cannot remove the primary default administrator account.' },
@@ -132,7 +125,6 @@ export async function DELETE(request: Request, context: RouteContext) {
       )
     }
 
-    // Cannot delete self
     if (auth.user.id === targetAdmin.id) {
       return NextResponse.json(
         { error: 'Cannot remove your own active administrator account.' },

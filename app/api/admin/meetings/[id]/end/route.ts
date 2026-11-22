@@ -7,8 +7,6 @@ interface RouteContext {
   params: Promise<{ id: string }>
 }
 
-// POST /api/admin/meetings/[id]/end
-// Explicit host action to end the meeting session permanently for all attendees
 export async function POST(request: Request, context: RouteContext) {
   const auth = await verifyAdminSession()
   if (!auth) {
@@ -25,7 +23,6 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // Call BigBlueButton end API
     try {
       await endBBBMeeting({
         meetingId: meeting.meetingId,
@@ -35,7 +32,6 @@ export async function POST(request: Request, context: RouteContext) {
       console.warn('Could not end meeting on BBB server (might already be terminated):', e)
     }
 
-    // Mark meeting as ended in database so nobody can rejoin it
     const updated = await prisma.meeting.update({
       where: { id },
       data: {

@@ -1,13 +1,3 @@
-/**
- * Secure Admin Account Creation Script
- *
- * PulseEdu is an admin-only application.
- * Reads configuration from command line arguments or environment variables.
- *
- * Usage:
- *   npm run create-admin
- *   npm run create-admin -- --email=admin@pulseedu.com --password=AdminPassword123! --name="Administrator"
- */
 
 import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'

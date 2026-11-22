@@ -13,7 +13,6 @@ const JoinSchema = z.object({
   password: z.string().optional(),
 })
 
-// POST /api/meetings/[meetingId]/join
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params
@@ -37,7 +36,6 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // CRITICAL: If meeting was ended by host, reject the join request and do NOT recreate it!
     if (meeting.isEnded) {
       return NextResponse.json(
         { error: 'This meeting has ended and is closed. No further participants can join.' },
@@ -45,11 +43,9 @@ export async function POST(request: Request, context: RouteContext) {
       )
     }
 
-    // Check if the current user is an authenticated Admin (Host)
     const auth = await verifyAdminSession()
     const isHost = Boolean(auth?.isAuth)
 
-    // Unauthenticated guests must provide attendee password if one is required
     if (!isHost) {
       if (meeting.attendeePassword && password) {
         if (password.trim() !== meeting.attendeePassword.trim()) {
@@ -60,7 +56,6 @@ export async function POST(request: Request, context: RouteContext) {
       }
     }
 
-    // Ensure meeting exists on BBB server
     await createBBBMeeting({
       meetingId: meeting.meetingId,
       name: meeting.name,
@@ -71,8 +66,6 @@ export async function POST(request: Request, context: RouteContext) {
       isRecorded: meeting.isRecorded,
     })
 
-    // Authenticated admin joins with moderatorPassword (Host)
-    // Guest joins with attendeePassword (Guest)
     const joinPassword = isHost ? meeting.moderatorPassword : meeting.attendeePassword
     const hostName = auth?.user?.name || 'Meeting Host'
     const effectiveName = displayName || (isHost ? hostName : 'Guest Participant')
