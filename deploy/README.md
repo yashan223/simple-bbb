@@ -65,7 +65,7 @@ If using HAProxy for high availability and load balancing:
    ```
 2. Copy configuration:
    ```bash
-   sudo cp deploy/haproxy.cfg /etc/haproxy/haproxy.cfg
+   sudo cp deploy/meeting.pulseedu.online.cfg /etc/haproxy/haproxy.cfg
    ```
 3. Test and reload HAProxy:
    ```bash
