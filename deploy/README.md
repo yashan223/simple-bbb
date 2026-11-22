@@ -76,9 +76,21 @@ pm2 startup
 ## 3. HAProxy Setup (meeting.pulseedu.online.cfg)
 
 1. Prepare SSL certificate for HAProxy:
+
+   **If you already have Let's Encrypt certificates:**
    ```bash
    sudo mkdir -p /etc/ssl/pulseedu
    sudo cat /etc/letsencrypt/live/meeting.pulseedu.online/fullchain.pem /etc/letsencrypt/live/meeting.pulseedu.online/privkey.pem > /etc/ssl/pulseedu/meeting.pulseedu.online.pem
+   sudo chmod 600 /etc/ssl/pulseedu/meeting.pulseedu.online.pem
+   ```
+
+   **If you do NOT have Let's Encrypt certificates yet (generate initial cert so HAProxy starts):**
+   ```bash
+   sudo mkdir -p /etc/ssl/pulseedu
+   sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+     -keyout /etc/ssl/pulseedu/meeting.pulseedu.online.pem \
+     -out /etc/ssl/pulseedu/meeting.pulseedu.online.pem \
+     -subj "/CN=meeting.pulseedu.online"
    sudo chmod 600 /etc/ssl/pulseedu/meeting.pulseedu.online.pem
    ```
 
