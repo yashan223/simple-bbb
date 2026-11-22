@@ -66,6 +66,13 @@ export async function POST(request: Request, context: RouteContext) {
       isRecorded: meeting.isRecorded,
     })
 
+    if (!meeting.hasStarted) {
+      await prisma.meeting.update({
+        where: { id: meeting.id },
+        data: { hasStarted: true },
+      })
+    }
+
     const joinPassword = isHost ? meeting.moderatorPassword : meeting.attendeePassword
     const hostName = auth?.user?.name || 'Meeting Host'
     const effectiveName = displayName || (isHost ? hostName : 'Guest Participant')

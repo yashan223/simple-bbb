@@ -25,6 +25,7 @@ model Meeting {
   welcomeMessage    String?
   maxParticipants   Int?      @default(0)
   isRecorded        Boolean   @default(false)
+  hasStarted        Boolean   @default(false)
   isEnded           Boolean   @default(false)
   endedAt           DateTime?
   createdAt         DateTime  @default(now())

@@ -3,7 +3,7 @@ import { z } from 'zod'
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/dal'
-import { createBBBMeeting } from '@/lib/bbb'
+import { createBBBMeeting, getBBBMeetingInfo } from '@/lib/bbb'
 
 const CreateMeetingSchema = z.object({
   name: z.string().min(2, 'Meeting name must be at least 2 characters'),
@@ -26,7 +26,48 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ meetings })
+    const updatedMeetings = await Promise.all(
+      meetings.map(async (meeting) => {
+        if (meeting.isEnded) {
+          return meeting
+        }
+
+        try {
+          const info = await getBBBMeetingInfo(meeting.meetingId, meeting.moderatorPassword)
+
+          let hasStarted = meeting.hasStarted
+          if (!hasStarted && (info.hasUserJoined || info.running)) {
+            hasStarted = true
+            await prisma.meeting.update({
+              where: { id: meeting.id },
+              data: { hasStarted: true },
+            })
+            meeting.hasStarted = true
+          }
+
+          if (hasStarted) {
+            const endedOnBBB =
+              info.hasBeenForciblyEnded ||
+              info.notFound ||
+              (!info.running && info.hasUserJoined)
+
+            if (endedOnBBB) {
+              const endedMeeting = await prisma.meeting.update({
+                where: { id: meeting.id },
+                data: { isEnded: true, endedAt: new Date() },
+              })
+              return endedMeeting
+            }
+          }
+        } catch (err) {
+          console.error('Error syncing meeting status with BBB:', meeting.meetingId, err)
+        }
+
+        return meeting
+      })
+    )
+
+    return NextResponse.json({ meetings: updatedMeetings })
   } catch (error) {
     console.error('Failed to list meetings:', error)
     return NextResponse.json({ error: 'Failed to retrieve meetings' }, { status: 500 })

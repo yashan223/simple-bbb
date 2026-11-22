@@ -47,6 +47,7 @@ interface Meeting {
   welcomeMessage: string | null
   maxParticipants: number | null
   isRecorded: boolean
+  hasStarted?: boolean
   isEnded: boolean
   endedAt: string | null
   createdAt: string
@@ -121,7 +122,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchInitialData()
+    const interval = setInterval(() => {
+      syncMeetings()
+    }, 8000)
+    return () => clearInterval(interval)
   }, [])
+
+  async function syncMeetings() {
+    try {
+      const meetingsRes = await fetch('/api/admin/meetings')
+      if (meetingsRes.ok) {
+        const meetingsData = await meetingsRes.json()
+        setMeetings(meetingsData.meetings || [])
+      }
+    } catch (err) {
+      console.error('Failed to sync meetings:', err)
+    }
+  }
 
   async function fetchInitialData() {
     setLoading(true)

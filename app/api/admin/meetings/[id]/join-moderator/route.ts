@@ -40,6 +40,13 @@ export async function GET(request: Request, context: RouteContext) {
       isRecorded: meeting.isRecorded,
     })
 
+    if (!meeting.hasStarted) {
+      await prisma.meeting.update({
+        where: { id: meeting.id },
+        data: { hasStarted: true },
+      })
+    }
+
     const joinUrl = getBBBJoinUrl({
       meetingId: meeting.meetingId,
       fullName: auth.user.name || 'Admin Host',

@@ -163,27 +163,53 @@ export async function isBBBMeetingRunning(meetingId: string): Promise<boolean> {
   }
 }
 
-export async function getBBBMeetingInfo(meetingId: string): Promise<{
+export async function getBBBMeetingInfo(
+  meetingId: string,
+  moderatorPassword?: string
+): Promise<{
   success: boolean
   running: boolean
   participantCount: number
+  hasUserJoined: boolean
+  hasBeenForciblyEnded: boolean
+  notFound: boolean
 }> {
-  const url = buildBBBUrl('getMeetingInfo', { meetingID: meetingId })
+  const params: Record<string, string> = { meetingID: meetingId }
+  if (moderatorPassword) {
+    params.password = moderatorPassword
+  }
+  const url = buildBBBUrl('getMeetingInfo', params)
   try {
     const res = await fetch(url)
     const xml = await res.text()
     const returncodeMatch = xml.match(/<returncode>(\w+)<\/returncode>/)
+    const messageKeyMatch = xml.match(/<messageKey>(\w+)<\/messageKey>/)
     const isRunningMatch = xml.match(/<running>(\w+)<\/running>/)
     const participantCountMatch = xml.match(/<participantCount>(\d+)<\/participantCount>/)
+    const hasUserJoinedMatch = xml.match(/<hasUserJoined>(\w+)<\/hasUserJoined>/)
+    const hasBeenForciblyEndedMatch = xml.match(/<hasBeenForciblyEnded>(\w+)<\/hasBeenForciblyEnded>/)
+
+    const isSuccess = returncodeMatch ? returncodeMatch[1] === 'SUCCESS' : false
+    const notFound = messageKeyMatch ? messageKeyMatch[1] === 'notFound' : false
 
     return {
-      success: returncodeMatch ? returncodeMatch[1] === 'SUCCESS' : false,
+      success: isSuccess,
       running: isRunningMatch ? isRunningMatch[1] === 'true' : false,
       participantCount: participantCountMatch ? parseInt(participantCountMatch[1], 10) : 0,
+      hasUserJoined: hasUserJoinedMatch ? hasUserJoinedMatch[1] === 'true' : false,
+      hasBeenForciblyEnded: hasBeenForciblyEndedMatch ? hasBeenForciblyEndedMatch[1] === 'true' : false,
+      notFound,
     }
   } catch (error) {
     console.error('BBB getMeetingInfo error:', error)
-    return { success: false, running: false, participantCount: 0 }
+    return {
+      success: false,
+      running: false,
+      participantCount: 0,
+      hasUserJoined: false,
+      hasBeenForciblyEnded: false,
+      notFound: false,
+    }
   }
 }
 
