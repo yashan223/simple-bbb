@@ -7,6 +7,22 @@ export interface AdminUser {
   name: string
   email: string
   createdAt: Date
+  isDefaultAdmin: boolean
+}
+
+/**
+ * Returns the configured default admin email (lowercased)
+ */
+export function getDefaultAdminEmail(): string {
+  return (process.env.DEFAULT_ADMIN_EMAIL || 'admin@pulseedu.online').toLowerCase().trim()
+}
+
+/**
+ * Checks if a given email belongs to the primary default administrator
+ */
+export function isDefaultAdmin(email: string | null | undefined): boolean {
+  if (!email) return false
+  return email.toLowerCase().trim() === getDefaultAdminEmail()
 }
 
 /**
@@ -33,7 +49,13 @@ export const verifyAdminSession = cache(async (): Promise<{ isAuth: true; user: 
       return null
     }
 
-    return { isAuth: true, user }
+    return {
+      isAuth: true,
+      user: {
+        ...user,
+        isDefaultAdmin: isDefaultAdmin(user.email),
+      },
+    }
   } catch (error) {
     console.error('Failed to verify admin in database:', error)
     return null

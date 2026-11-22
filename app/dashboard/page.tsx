@@ -25,7 +25,10 @@ import {
   RefreshCw,
   AlertTriangle,
   Loader2,
-  PowerOff
+  PowerOff,
+  Edit3,
+  Lock,
+  ShieldCheck
 } from 'lucide-react'
 
 interface AdminUser {
@@ -33,6 +36,7 @@ interface AdminUser {
   name: string
   email: string
   createdAt: string
+  isDefaultAdmin?: boolean
 }
 
 interface Meeting {
@@ -98,6 +102,14 @@ export default function DashboardPage() {
   const [adminSubmitting, setAdminSubmitting] = useState(false)
   const [adminError, setAdminError] = useState<string | null>(null)
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null)
+
+  // Edit Admin state
+  const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null)
+  const [editAdminName, setEditAdminName] = useState('')
+  const [editAdminPassword, setEditAdminPassword] = useState('')
+  const [editAdminSubmitting, setEditAdminSubmitting] = useState(false)
+  const [editAdminError, setEditAdminError] = useState<string | null>(null)
+  const [editAdminSuccess, setEditAdminSuccess] = useState<string | null>(null)
 
   // Copy feedback
   const [copiedId, setCopiedId] = useState<string | null>(null)
@@ -358,6 +370,94 @@ export default function DashboardPage() {
     }
   }
 
+  function openEditAdmin(admin: AdminUser) {
+    setEditingAdmin(admin)
+    setEditAdminName(admin.name)
+    setEditAdminPassword('')
+    setEditAdminError(null)
+    setEditAdminSuccess(null)
+  }
+
+  async function handleUpdateAdmin(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editingAdmin) return
+
+    setEditAdminSubmitting(true)
+    setEditAdminError(null)
+    setEditAdminSuccess(null)
+
+    try {
+      const payload: { name: string; password?: string } = {
+        name: editAdminName.trim(),
+      }
+      if (editAdminPassword.trim()) {
+        payload.password = editAdminPassword.trim()
+      }
+
+      const res = await fetch(`/api/admin/users/${editingAdmin.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        setEditAdminError(data.error || 'Failed to update administrator')
+        return
+      }
+
+      setEditAdminSuccess('Administrator updated successfully')
+
+      // Update state in admin list
+      setAdmins((prev) =>
+        prev.map((a) => (a.id === editingAdmin.id ? { ...a, name: editAdminName.trim() } : a))
+      )
+
+      // If current user updated their own account, update currentUser too
+      if (currentUser?.id === editingAdmin.id) {
+        setCurrentUser((prev) => (prev ? { ...prev, name: editAdminName.trim() } : null))
+      }
+
+      setTimeout(() => {
+        setEditingAdmin(null)
+        setEditAdminSuccess(null)
+      }, 1000)
+    } catch (err) {
+      console.error('Error updating admin:', err)
+      setEditAdminError('Network error while updating administrator')
+    } finally {
+      setEditAdminSubmitting(false)
+    }
+  }
+
+  function promptDeleteAdmin(admin: AdminUser) {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Remove Administrator',
+      message: `Are you sure you want to remove ${admin.name} (${admin.email})? They will immediately lose access to PulseEdu.`,
+      confirmText: 'Remove Admin',
+      onConfirm: async () => {
+        setConfirmLoading(true)
+        try {
+          const res = await fetch(`/api/admin/users/${admin.id}`, {
+            method: 'DELETE',
+          })
+          const data = await res.json()
+          if (res.ok) {
+            setAdmins((prev) => prev.filter((a) => a.id !== admin.id))
+          } else {
+            alert(data.error || 'Failed to remove admin')
+          }
+        } catch (err) {
+          console.error('Failed to remove admin:', err)
+        } finally {
+          setConfirmLoading(false)
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }))
+        }
+      },
+    })
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">
@@ -561,13 +661,27 @@ export default function DashboardPage() {
               {currentUser?.name?.charAt(0).toUpperCase() || 'A'}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-white truncate">
-                {currentUser?.name || 'Administrator'}
+              <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                <span>{currentUser?.name || 'Administrator'}</span>
+                {currentUser?.isDefaultAdmin && (
+                  <span title="Primary Default Administrator">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                  </span>
+                )}
               </div>
               <div className="text-[11px] text-slate-400 truncate font-mono">
                 {currentUser?.email}
               </div>
             </div>
+            {currentUser && (
+              <button
+                onClick={() => openEditAdmin(currentUser)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                title="Edit Your Account"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
 
           <button
@@ -642,7 +756,7 @@ export default function DashboardPage() {
               </button>
             )}
 
-            {activeTab === 'admins' && (
+            {activeTab === 'admins' && currentUser?.isDefaultAdmin && (
               <button
                 onClick={() => setShowCreateAdmin(!showCreateAdmin)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition cursor-pointer"
@@ -1026,15 +1140,25 @@ export default function DashboardPage() {
             {/* TAB 3: ADMIN ACCOUNTS */}
             {activeTab === 'admins' && (
               <div className="space-y-6">
-                {/* Create Admin Form */}
-                {showCreateAdmin && (
+                {/* Non-default admin notice */}
+                {!currentUser?.isDefaultAdmin && (
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-xs flex items-center gap-3">
+                    <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span>
+                      Only the primary default administrator (<strong className="text-slate-200">admin@pulseedu.online</strong>) can provision new admin accounts or edit the default administrator account.
+                    </span>
+                  </div>
+                )}
+
+                {/* Create Admin Form (Default Admin Only) */}
+                {showCreateAdmin && currentUser?.isDefaultAdmin && (
                   <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-xl animate-in fade-in">
                     <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                      <Shield className="w-4 h-4 text-indigo-400" />
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
                       Provision Additional Admin Account
                     </h3>
                     <p className="text-xs text-slate-400 mb-6">
-                      Only authenticated administrators can provision new administrator accounts. Visitors cannot self-register.
+                      Only the primary default administrator can provision new administrator accounts. Visitors cannot self-register.
                     </p>
 
                     {adminError && (
@@ -1131,13 +1255,18 @@ export default function DashboardPage() {
                           <th className="py-3 px-5">Email</th>
                           <th className="py-3 px-5">Account Type</th>
                           <th className="py-3 px-5">Created Date</th>
+                          <th className="py-3 px-5 text-right">Actions</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-800">
                         {admins.map((admin) => (
                           <tr key={admin.id} className="hover:bg-slate-800/40 transition">
                             <td className="py-3 px-5 font-semibold text-white flex items-center gap-2.5">
-                              <div className="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-300 font-bold flex items-center justify-center text-xs">
+                              <div className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
+                                admin.isDefaultAdmin
+                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                                  : 'bg-indigo-600/20 text-indigo-300'
+                              }`}>
                                 {admin.name.charAt(0).toUpperCase()}
                               </div>
                               <span>{admin.name}</span>
@@ -1151,13 +1280,66 @@ export default function DashboardPage() {
                               {admin.email}
                             </td>
                             <td className="py-3 px-5">
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-2.5 py-0.5 rounded-full">
-                                <Shield className="w-3 h-3" />
-                                Admin
-                              </span>
+                              {admin.isDefaultAdmin ? (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-300 px-2.5 py-0.5 rounded-full">
+                                  <ShieldCheck className="w-3 h-3 text-amber-400" />
+                                  Default Admin
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-2.5 py-0.5 rounded-full">
+                                  <Shield className="w-3 h-3 text-indigo-400" />
+                                  Admin
+                                </span>
+                              )}
                             </td>
                             <td className="py-3 px-5 text-slate-400">
                               {new Date(admin.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-5 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                {admin.isDefaultAdmin ? (
+                                  currentUser?.isDefaultAdmin ? (
+                                    <button
+                                      onClick={() => openEditAdmin(admin)}
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition cursor-pointer"
+                                      title="Edit Default Administrator"
+                                    >
+                                      <Edit3 className="w-3 h-3 text-amber-400" />
+                                      <span>Edit</span>
+                                    </button>
+                                  ) : (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-medium"
+                                      title="Only the default administrator can edit this account"
+                                    >
+                                      <Lock className="w-3 h-3 text-slate-500" />
+                                      <span>Protected</span>
+                                    </span>
+                                  )
+                                ) : (
+                                  <>
+                                    {(currentUser?.isDefaultAdmin || currentUser?.id === admin.id) && (
+                                      <button
+                                        onClick={() => openEditAdmin(admin)}
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition cursor-pointer"
+                                        title="Edit Administrator"
+                                      >
+                                        <Edit3 className="w-3 h-3 text-indigo-400" />
+                                        <span>Edit</span>
+                                      </button>
+                                    )}
+                                    {currentUser?.isDefaultAdmin && (
+                                      <button
+                                        onClick={() => promptDeleteAdmin(admin)}
+                                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
+                                        title="Remove Administrator"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </td>
                           </tr>
                         ))}
@@ -1170,6 +1352,106 @@ export default function DashboardPage() {
           </div>
         </main>
       </div>
+
+      {/* Edit Admin Modal */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2 text-white font-bold text-sm">
+                {editingAdmin.isDefaultAdmin ? (
+                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                ) : (
+                  <Shield className="w-4 h-4 text-indigo-400" />
+                )}
+                <span>
+                  {editingAdmin.id === currentUser?.id ? 'Edit Your Account' : 'Edit Administrator'}
+                </span>
+              </div>
+              <button
+                onClick={() => setEditingAdmin(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-xs text-slate-400 space-y-1">
+              <div>
+                Account Email: <strong className="text-slate-200 font-mono">{editingAdmin.email}</strong>
+              </div>
+              {editingAdmin.isDefaultAdmin && (
+                <div className="text-amber-400/90 text-[11px] flex items-center gap-1 pt-0.5">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>Primary Default Administrator</span>
+                </div>
+              )}
+            </div>
+
+            {editAdminError && (
+              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{editAdminError}</span>
+              </div>
+            )}
+
+            {editAdminSuccess && (
+              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 flex-shrink-0" />
+                <span>{editAdminSuccess}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateAdmin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Enter administrator name"
+                  value={editAdminName}
+                  onChange={(e) => setEditAdminName(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                  New Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  placeholder="Leave blank to keep current password"
+                  value={editAdminPassword}
+                  onChange={(e) => setEditAdminPassword(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">Must be at least 8 characters if changing.</p>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setEditingAdmin(null)}
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editAdminSubmitting}
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                >
+                  {editAdminSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>{editAdminSubmitting ? 'Saving...' : 'Save Changes'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

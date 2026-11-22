@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { verifyAdminSession } from '@/lib/dal'
+import { verifyAdminSession, isDefaultAdmin } from '@/lib/dal'
 
 const CreateAdminSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters long'),
@@ -29,18 +29,31 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json({ users })
+    const usersWithRole = users.map((u) => ({
+      ...u,
+      isDefaultAdmin: isDefaultAdmin(u.email),
+    }))
+
+    return NextResponse.json({ users: usersWithRole })
   } catch (error) {
     console.error('Failed to list admin users:', error)
     return NextResponse.json({ error: 'Failed to retrieve admin accounts' }, { status: 500 })
   }
 }
 
-// POST /api/admin/users - Create additional admin account (requires authenticated admin)
+// POST /api/admin/users - Create additional admin account (ONLY default admin can do this)
 export async function POST(request: Request) {
   const auth = await verifyAdminSession()
   if (!auth) {
     return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 })
+  }
+
+  // Strictly enforce: Only the default administrator can add/provision new admins!
+  if (!auth.user.isDefaultAdmin) {
+    return NextResponse.json(
+      { error: 'Forbidden: Only the primary default administrator can add or provision administrator accounts.' },
+      { status: 403 }
+    )
   }
 
   try {
@@ -84,7 +97,16 @@ export async function POST(request: Request) {
       },
     })
 
-    return NextResponse.json({ success: true, user: newUser }, { status: 201 })
+    return NextResponse.json(
+      {
+        success: true,
+        user: {
+          ...newUser,
+          isDefaultAdmin: isDefaultAdmin(newUser.email),
+        },
+      },
+      { status: 201 }
+    )
   } catch (error) {
     console.error('Failed to create admin account:', error)
     return NextResponse.json({ error: 'Internal server error while creating admin' }, { status: 500 })
