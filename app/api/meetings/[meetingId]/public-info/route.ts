@@ -7,7 +7,6 @@ interface RouteContext {
 }
 
 // GET /api/meetings/[meetingId]/public-info
-// Returns meeting info and checks if the visitor is currently authenticated as an admin
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params
@@ -19,6 +18,8 @@ export async function GET(request: Request, context: RouteContext) {
         welcomeMessage: true,
         isRecorded: true,
         attendeePassword: true,
+        isEnded: true,
+        endedAt: true,
       },
     })
 
@@ -33,6 +34,8 @@ export async function GET(request: Request, context: RouteContext) {
       meetingId: meeting.meetingId,
       welcomeMessage: meeting.welcomeMessage,
       isRecorded: meeting.isRecorded,
+      isEnded: Boolean(meeting.isEnded),
+      endedAt: meeting.endedAt,
       hasPassword: Boolean(meeting.attendeePassword),
       isAuthenticated: Boolean(auth?.isAuth),
       adminUser: auth?.user

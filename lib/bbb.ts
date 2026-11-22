@@ -50,6 +50,10 @@ export function buildBBBUrl(
   return `${url}/${action}?${searchParams.toString()}`
 }
 
+// 1-page blank PDF (16:9 1920x1080) encoded in Base64 to override default BBB marketing slides
+const BLANK_WHITEBOARD_PDF_BASE64 =
+  'JVBERi0xLjQKMSAwIG9iaiA8PC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUj4+IGVuZG9iagoyIDAgb2JqIDw8L1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDE+PiBlbmRvYmoKMyAwIG9iaiA8PC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL01lZGlhQm94IFswIDAgMTkyMCAxMDgwXSAvUmVzb3VyY2VzIDw8Pj4+PiBlbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyIDw8L1NpemUgNCAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoyMDgKJSVFT0YK'
+
 export async function createBBBMeeting({
   meetingId,
   name,
@@ -77,8 +81,20 @@ export async function createBBBMeeting({
     maxParticipants: maxParticipants && maxParticipants > 0 ? maxParticipants : undefined,
   })
 
+  // Pre-load clean blank whiteboard presentation to replace BBB default branded slides
+  const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
+<modules>
+  <module name="presentation">
+    <document name="whiteboard.pdf" current="true" downloadable="false">${BLANK_WHITEBOARD_PDF_BASE64}</document>
+  </module>
+</modules>`
+
   try {
-    const res = await fetch(url)
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/xml' },
+      body: xmlBody,
+    })
     const xml = await res.text()
     const returncodeMatch = xml.match(/<returncode>(\w+)<\/returncode>/)
     const returncode = returncodeMatch ? returncodeMatch[1] : null

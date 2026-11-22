@@ -4,13 +4,15 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Shield, User, KeyRound, AlertCircle, ArrowRight, Loader2, Sparkles, LayoutDashboard } from 'lucide-react'
+import { Shield, User, KeyRound, AlertCircle, ArrowRight, Loader2, Sparkles, LayoutDashboard, Clock } from 'lucide-react'
 
 interface PublicMeetingInfo {
   name: string
   meetingId: string
   welcomeMessage: string | null
   isRecorded: boolean
+  isEnded: boolean
+  endedAt: string | null
   hasPassword: boolean
   isAuthenticated: boolean
   adminUser: {
@@ -91,7 +93,6 @@ export default function JoinMeetingPage() {
       }
 
       if (data.joinUrl) {
-        // Redirect directly into BigBlueButton meeting room
         window.location.href = data.joinUrl
       } else {
         setJoinError('Invalid response from meeting server')
@@ -134,6 +135,44 @@ export default function JoinMeetingPage() {
               Sign in as an administrator
             </Link>
           </div>
+        </div>
+      </div>
+    )
+  }
+
+  // If meeting was ended by the host: block rejoining completely!
+  if (meeting.isEnded) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+          <div className="flex justify-center mb-2">
+            <Image
+              src="/logo-wide.png"
+              alt="PulseEdu"
+              width={180}
+              height={45}
+              className="h-9 w-auto object-contain drop-shadow"
+              priority
+            />
+          </div>
+          <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center mx-auto">
+            <Clock className="w-6 h-6 text-slate-400" />
+          </div>
+          <h2 className="text-lg font-bold text-white">This Meeting Has Ended</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            The host has concluded <strong className="text-slate-200">{meeting.name}</strong>. This session is closed and no further participants can join.
+          </p>
+          {meeting.isAuthenticated && (
+            <div className="pt-3">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Return to Admin Dashboard</span>
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     )
@@ -234,7 +273,7 @@ export default function JoinMeetingPage() {
                   id="displayName"
                   type="text"
                   required
-                  placeholder={isHost ? 'Host Name' : 'e.g. Alex Johnson'}
+                  placeholder={isHost ? 'Host Name' : 'Enter your name'}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="block w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"

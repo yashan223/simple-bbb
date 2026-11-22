@@ -24,7 +24,8 @@ import {
   Clock,
   RefreshCw,
   AlertTriangle,
-  Loader2
+  Loader2,
+  PowerOff
 } from 'lucide-react'
 
 interface AdminUser {
@@ -43,6 +44,8 @@ interface Meeting {
   welcomeMessage: string | null
   maxParticipants: number | null
   isRecorded: boolean
+  isEnded: boolean
+  endedAt: string | null
   createdAt: string
 }
 
@@ -211,11 +214,42 @@ export default function DashboardPage() {
     }
   }
 
+  // Host Option: End Live Meeting for everyone
+  function promptEndMeeting(meeting: Meeting) {
+    setConfirmModal({
+      isOpen: true,
+      title: 'End Live Meeting for Everyone',
+      message: `Are you sure you want to end "${meeting.name}"? All attendees will be disconnected immediately and the meeting will be closed permanently. No one will be able to rejoin.`,
+      confirmText: 'End Meeting',
+      onConfirm: async () => {
+        setConfirmLoading(true)
+        try {
+          const res = await fetch(`/api/admin/meetings/${meeting.id}/end`, {
+            method: 'POST',
+          })
+          const data = await res.json()
+          if (res.ok) {
+            setMeetings((prev) =>
+              prev.map((m) => (m.id === meeting.id ? { ...m, isEnded: true } : m))
+            )
+          } else {
+            alert(data.error || 'Failed to end meeting')
+          }
+        } catch (err) {
+          console.error('End meeting error:', err)
+        } finally {
+          setConfirmLoading(false)
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }))
+        }
+      },
+    })
+  }
+
   function promptDeleteMeeting(meeting: Meeting) {
     setConfirmModal({
       isOpen: true,
-      title: 'End & Delete Meeting',
-      message: `Are you sure you want to delete "${meeting.name}"? This will terminate any active BigBlueButton session and remove its join link.`,
+      title: 'Delete Meeting Record',
+      message: `Are you sure you want to permanently delete "${meeting.name}" from your meetings list?`,
       confirmText: 'Delete Meeting',
       onConfirm: async () => {
         setConfirmLoading(true)
@@ -579,7 +613,7 @@ export default function DashboardPage() {
                 )}
               </h2>
               <p className="text-[11px] text-slate-400 hidden sm:block">
-                {activeTab === 'meetings' && 'Create, launch, and manage live BigBlueButton sessions'}
+                {activeTab === 'meetings' && 'Create, launch, manage, and end BigBlueButton sessions'}
                 {activeTab === 'recordings' && 'View, playback, and manage recorded meeting sessions'}
                 {activeTab === 'admins' && 'Provision and manage platform administrators'}
               </p>
@@ -652,7 +686,7 @@ export default function DashboardPage() {
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Engineering Architecture Sync"
+                          placeholder="Meeting name"
                           value={meetingName}
                           onChange={(e) => setMeetingName(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -665,7 +699,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                           type="text"
-                          placeholder="Leave empty for auto-generated"
+                          placeholder="Attendee password (optional)"
                           value={attendeePassword}
                           onChange={(e) => setAttendeePassword(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -681,7 +715,7 @@ export default function DashboardPage() {
                         </label>
                         <input
                           type="text"
-                          placeholder="e.g. Welcome to PulseEdu Live Session!"
+                          placeholder="Welcome message (optional)"
                           value={welcomeMessage}
                           onChange={(e) => setWelcomeMessage(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -747,7 +781,9 @@ export default function DashboardPage() {
                     {meetings.map((meeting) => (
                       <div
                         key={meeting.id}
-                        className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition space-y-4 shadow-sm"
+                        className={`bg-slate-900 border rounded-xl p-5 transition space-y-4 shadow-sm ${
+                          meeting.isEnded ? 'border-slate-800/60 opacity-80' : 'border-slate-800 hover:border-slate-700'
+                        }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
@@ -755,6 +791,16 @@ export default function DashboardPage() {
                               <h4 className="text-base font-bold text-white">
                                 {meeting.name}
                               </h4>
+                              {meeting.isEnded ? (
+                                <span className="text-[10px] font-semibold bg-slate-800 border border-slate-700 text-slate-400 px-2 py-0.5 rounded-full">
+                                  Session Ended
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                  Active Room
+                                </span>
+                              )}
                               {meeting.isRecorded && (
                                 <span className="text-[10px] font-semibold bg-rose-500/10 border border-rose-500/30 text-rose-300 px-2 py-0.5 rounded-full">
                                   Recording Enabled
@@ -768,42 +814,68 @@ export default function DashboardPage() {
                                 <Calendar className="w-3.5 h-3.5" />
                                 {new Date(meeting.createdAt).toLocaleDateString()}
                               </span>
+                              {meeting.isEnded && meeting.endedAt && (
+                                <>
+                                  <span>•</span>
+                                  <span className="text-rose-400/90 font-medium">
+                                    Closed {new Date(meeting.endedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                  </span>
+                                </>
+                              )}
                             </div>
                           </div>
 
                           <div className="flex items-center gap-2 flex-wrap">
-                            <button
-                              onClick={() => handleJoinAsModerator(meeting.id)}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-emerald-900/20"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              <span>Join as Host</span>
-                            </button>
+                            {!meeting.isEnded ? (
+                              <>
+                                <button
+                                  onClick={() => handleJoinAsModerator(meeting.id)}
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-emerald-900/20"
+                                >
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                  <span>Join as Host</span>
+                                </button>
 
-                            <button
-                              onClick={() => {
-                                const origin = window.location.origin
-                                copyText(`${origin}/join/${meeting.meetingId}`, meeting.meetingId)
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
-                            >
-                              {copiedId === meeting.meetingId ? (
-                                <>
-                                  <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                  <span className="text-emerald-400">Copied!</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3.5 h-3.5" />
-                                  <span>Copy Invite Link</span>
-                                </>
-                              )}
-                            </button>
+                                <button
+                                  onClick={() => {
+                                    const origin = window.location.origin
+                                    copyText(`${origin}/join/${meeting.meetingId}`, meeting.meetingId)
+                                  }}
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                                >
+                                  {copiedId === meeting.meetingId ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span className="text-emerald-400">Copied!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5" />
+                                      <span>Copy Invite Link</span>
+                                    </>
+                                  )}
+                                </button>
+
+                                {/* Host Option: End Meeting */}
+                                <button
+                                  onClick={() => promptEndMeeting(meeting)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-rose-500/20 text-amber-300 hover:text-rose-300 text-xs font-semibold border border-amber-500/30 hover:border-rose-500/30 transition cursor-pointer"
+                                  title="End live meeting for everyone"
+                                >
+                                  <PowerOff className="w-3.5 h-3.5" />
+                                  <span>End Meeting</span>
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-slate-500 italic px-2">
+                                Room Closed
+                              </span>
+                            )}
 
                             <button
                               onClick={() => promptDeleteMeeting(meeting)}
                               className="p-2 rounded-lg bg-slate-800/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
-                              title="Delete & End Meeting"
+                              title="Delete Record"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -829,7 +901,13 @@ export default function DashboardPage() {
                           </div>
 
                           <div className="text-[11px] text-indigo-400">
-                            Public Join Link: <code className="bg-slate-900 px-1 py-0.5 rounded text-slate-300">/join/{meeting.meetingId}</code>
+                            {meeting.isEnded ? (
+                              <span className="text-slate-500 italic">Join link disabled (session ended)</span>
+                            ) : (
+                              <>
+                                Public Join Link: <code className="bg-slate-900 px-1 py-0.5 rounded text-slate-300">/join/{meeting.meetingId}</code>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -981,7 +1059,7 @@ export default function DashboardPage() {
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Jane Doe"
+                          placeholder="Admin name"
                           value={newAdminName}
                           onChange={(e) => setNewAdminName(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
@@ -995,7 +1073,7 @@ export default function DashboardPage() {
                         <input
                           type="email"
                           required
-                          placeholder="newadmin@example.com"
+                          placeholder="Email address"
                           value={newAdminEmail}
                           onChange={(e) => setNewAdminEmail(e.target.value)}
                           className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"

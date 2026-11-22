@@ -14,7 +14,6 @@ const JoinSchema = z.object({
 })
 
 // POST /api/meetings/[meetingId]/join
-// Authenticated admins join as Host (moderator). Unauthenticated participants join as Guest (attendee).
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params
@@ -36,6 +35,14 @@ export async function POST(request: Request, context: RouteContext) {
 
     if (!meeting) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
+    }
+
+    // CRITICAL: If meeting was ended by host, reject the join request and do NOT recreate it!
+    if (meeting.isEnded) {
+      return NextResponse.json(
+        { error: 'This meeting has ended and is closed. No further participants can join.' },
+        { status: 410 }
+      )
     }
 
     // Check if the current user is an authenticated Admin (Host)

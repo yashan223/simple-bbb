@@ -24,6 +24,14 @@ export async function GET(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
+    // If meeting was ended by host, don't allow joining
+    if (meeting.isEnded) {
+      return NextResponse.json(
+        { error: 'This meeting has ended and cannot be rejoined. Please create a new meeting.' },
+        { status: 400 }
+      )
+    }
+
     // Ensure meeting exists on BBB
     await createBBBMeeting({
       meetingId: meeting.meetingId,
@@ -37,7 +45,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     const joinUrl = getBBBJoinUrl({
       meetingId: meeting.meetingId,
-      fullName: auth.user.name || 'Admin Moderator',
+      fullName: auth.user.name || 'Admin Host',
       password: meeting.moderatorPassword,
     })
 
