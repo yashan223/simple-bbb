@@ -17,10 +17,14 @@ import {
   Calendar,
   AlertCircle,
   Sparkles,
-  Server,
-  UserCheck,
   Menu,
-  X
+  X,
+  Film,
+  Play,
+  Clock,
+  RefreshCw,
+  AlertTriangle,
+  Loader2
 } from 'lucide-react'
 
 interface AdminUser {
@@ -42,11 +46,30 @@ interface Meeting {
   createdAt: string
 }
 
+interface Recording {
+  recordId: string
+  meetingId: string
+  name: string
+  published: boolean
+  startTime: number
+  endTime: number
+  playbackUrl?: string
+  lengthMinutes?: number
+}
+
+interface ConfirmModalState {
+  isOpen: boolean
+  title: string
+  message: string
+  confirmText?: string
+  onConfirm: () => Promise<void> | void
+}
+
 export default function DashboardPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'meetings' | 'admins'>('meetings')
+  const [activeTab, setActiveTab] = useState<'meetings' | 'recordings' | 'admins'>('meetings')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   // Meetings state
@@ -58,6 +81,10 @@ export default function DashboardPage() {
   const [isRecorded, setIsRecorded] = useState(false)
   const [meetingSubmitting, setMeetingSubmitting] = useState(false)
   const [meetingError, setMeetingError] = useState<string | null>(null)
+
+  // Recordings state
+  const [recordings, setRecordings] = useState<Recording[]>([])
+  const [recordingsLoading, setRecordingsLoading] = useState(false)
 
   // Admins state
   const [admins, setAdmins] = useState<AdminUser[]>([])
@@ -71,6 +98,15 @@ export default function DashboardPage() {
 
   // Copy feedback
   const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // Confirmation Modal state
+  const [confirmModal, setConfirmModal] = useState<ConfirmModalState>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+  })
+  const [confirmLoading, setConfirmLoading] = useState(false)
 
   useEffect(() => {
     fetchInitialData()
@@ -95,7 +131,10 @@ export default function DashboardPage() {
         setMeetings(meetingsData.meetings || [])
       }
 
-      // 3. Fetch admins
+      // 3. Fetch recordings
+      fetchRecordings()
+
+      // 4. Fetch admins
       const adminsRes = await fetch('/api/admin/users')
       if (adminsRes.ok) {
         const adminsData = await adminsRes.json()
@@ -105,6 +144,21 @@ export default function DashboardPage() {
       console.error('Failed to load dashboard data:', err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function fetchRecordings() {
+    setRecordingsLoading(true)
+    try {
+      const res = await fetch('/api/admin/recordings')
+      if (res.ok) {
+        const data = await res.json()
+        setRecordings(data.recordings || [])
+      }
+    } catch (err) {
+      console.error('Failed to load recordings:', err)
+    } finally {
+      setRecordingsLoading(false)
     }
   }
 
@@ -157,21 +211,58 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleDeleteMeeting(id: string) {
-    if (!confirm('Are you sure you want to delete and end this meeting?')) return
+  function promptDeleteMeeting(meeting: Meeting) {
+    setConfirmModal({
+      isOpen: true,
+      title: 'End & Delete Meeting',
+      message: `Are you sure you want to delete "${meeting.name}"? This will terminate any active BigBlueButton session and remove its join link.`,
+      confirmText: 'Delete Meeting',
+      onConfirm: async () => {
+        setConfirmLoading(true)
+        try {
+          const res = await fetch(`/api/admin/meetings/${meeting.id}`, {
+            method: 'DELETE',
+          })
+          if (res.ok) {
+            setMeetings((prev) => prev.filter((m) => m.id !== meeting.id))
+          } else {
+            alert('Failed to delete meeting')
+          }
+        } catch (err) {
+          console.error('Delete meeting error:', err)
+        } finally {
+          setConfirmLoading(false)
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }))
+        }
+      },
+    })
+  }
 
-    try {
-      const res = await fetch(`/api/admin/meetings/${id}`, {
-        method: 'DELETE',
-      })
-      if (res.ok) {
-        setMeetings(meetings.filter((m) => m.id !== id))
-      } else {
-        alert('Failed to delete meeting')
-      }
-    } catch (err) {
-      console.error('Delete meeting error:', err)
-    }
+  function promptDeleteRecording(recording: Recording) {
+    setConfirmModal({
+      isOpen: true,
+      title: 'Delete Recording',
+      message: `Are you sure you want to permanently delete the recording for "${recording.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Recording',
+      onConfirm: async () => {
+        setConfirmLoading(true)
+        try {
+          const res = await fetch(`/api/admin/recordings/${recording.recordId}`, {
+            method: 'DELETE',
+          })
+          if (res.ok) {
+            setRecordings((prev) => prev.filter((r) => r.recordId !== recording.recordId))
+          } else {
+            alert('Failed to delete recording from server')
+          }
+        } catch (err) {
+          console.error('Delete recording error:', err)
+        } finally {
+          setConfirmLoading(false)
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }))
+        }
+      },
+    })
   }
 
   async function handleJoinAsModerator(meetingId: string) {
@@ -189,11 +280,9 @@ export default function DashboardPage() {
     }
   }
 
-  function copyParticipantLink(meetingId: string) {
-    const origin = window.location.origin
-    const url = `${origin}/join/${meetingId}`
-    navigator.clipboard.writeText(url)
-    setCopiedId(meetingId)
+  function copyText(text: string, id: string) {
+    navigator.clipboard.writeText(text)
+    setCopiedId(id)
     setTimeout(() => setCopiedId(null), 2500)
   }
 
@@ -248,6 +337,52 @@ export default function DashboardPage() {
 
   return (
     <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+      {/* Confirmation Modal */}
+      {confirmModal.isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="text-base font-bold text-white">
+                {confirmModal.title}
+              </h3>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {confirmModal.message}
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                disabled={confirmLoading}
+                onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={confirmLoading}
+                onClick={() => confirmModal.onConfirm()}
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-lg shadow-rose-900/30"
+              >
+                {confirmLoading ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <span>{confirmModal.confirmText || 'Confirm'}</span>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Backdrop */}
       {sidebarOpen && (
         <div
@@ -299,9 +434,10 @@ export default function DashboardPage() {
           {/* Sidebar Nav Items */}
           <nav className="p-4 space-y-1.5 flex-1 overflow-y-auto">
             <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 px-3 pb-2">
-              Navigation
+              Management
             </div>
 
+            {/* Meetings Tab */}
             <button
               onClick={() => {
                 setActiveTab('meetings')
@@ -328,6 +464,34 @@ export default function DashboardPage() {
               </span>
             </button>
 
+            {/* Recordings Tab */}
+            <button
+              onClick={() => {
+                setActiveTab('recordings')
+                setSidebarOpen(false)
+              }}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
+                activeTab === 'recordings'
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Film className="w-4 h-4" />
+                <span>Recordings</span>
+              </div>
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full font-mono ${
+                  activeTab === 'recordings'
+                    ? 'bg-indigo-500/30 text-white'
+                    : 'bg-slate-800 text-slate-400'
+                }`}
+              >
+                {recordings.length}
+              </span>
+            </button>
+
+            {/* Admin Accounts Tab */}
             <button
               onClick={() => {
                 setActiveTab('admins')
@@ -395,12 +559,19 @@ export default function DashboardPage() {
             </button>
             <div>
               <h2 className="text-base font-bold text-white flex items-center gap-2">
-                {activeTab === 'meetings' ? (
+                {activeTab === 'meetings' && (
                   <>
                     <Video className="w-4 h-4 text-indigo-400" />
                     <span>Meetings Management</span>
                   </>
-                ) : (
+                )}
+                {activeTab === 'recordings' && (
+                  <>
+                    <Film className="w-4 h-4 text-indigo-400" />
+                    <span>Session Recordings</span>
+                  </>
+                )}
+                {activeTab === 'admins' && (
                   <>
                     <Users className="w-4 h-4 text-indigo-400" />
                     <span>Administrator Accounts</span>
@@ -408,15 +579,15 @@ export default function DashboardPage() {
                 )}
               </h2>
               <p className="text-[11px] text-slate-400 hidden sm:block">
-                {activeTab === 'meetings'
-                  ? 'Create, manage, and launch BigBlueButton sessions'
-                  : 'Manage administrators with complete platform access'}
+                {activeTab === 'meetings' && 'Create, launch, and manage live BigBlueButton sessions'}
+                {activeTab === 'recordings' && 'View, playback, and manage recorded meeting sessions'}
+                {activeTab === 'admins' && 'Provision and manage platform administrators'}
               </p>
             </div>
           </div>
 
           <div>
-            {activeTab === 'meetings' ? (
+            {activeTab === 'meetings' && (
               <button
                 onClick={() => setShowCreateMeeting(!showCreateMeeting)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition cursor-pointer"
@@ -424,7 +595,20 @@ export default function DashboardPage() {
                 <Plus className="w-4 h-4" />
                 <span>Create New Meeting</span>
               </button>
-            ) : (
+            )}
+
+            {activeTab === 'recordings' && (
+              <button
+                onClick={fetchRecordings}
+                disabled={recordingsLoading}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${recordingsLoading ? 'animate-spin text-indigo-400' : ''}`} />
+                <span>Refresh Recordings</span>
+              </button>
+            )}
+
+            {activeTab === 'admins' && (
               <button
                 onClick={() => setShowCreateAdmin(!showCreateAdmin)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition cursor-pointer"
@@ -524,7 +708,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => setShowCreateMeeting(false)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -552,7 +736,7 @@ export default function DashboardPage() {
                     </p>
                     <button
                       onClick={() => setShowCreateMeeting(true)}
-                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition"
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Create Meeting</span>
@@ -563,7 +747,7 @@ export default function DashboardPage() {
                     {meetings.map((meeting) => (
                       <div
                         key={meeting.id}
-                        className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition space-y-4"
+                        className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition space-y-4 shadow-sm"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
@@ -597,7 +781,10 @@ export default function DashboardPage() {
                             </button>
 
                             <button
-                              onClick={() => copyParticipantLink(meeting.meetingId)}
+                              onClick={() => {
+                                const origin = window.location.origin
+                                copyText(`${origin}/join/${meeting.meetingId}`, meeting.meetingId)
+                              }}
                               className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
                             >
                               {copiedId === meeting.meetingId ? (
@@ -614,7 +801,7 @@ export default function DashboardPage() {
                             </button>
 
                             <button
-                              onClick={() => handleDeleteMeeting(meeting.id)}
+                              onClick={() => promptDeleteMeeting(meeting)}
                               className="p-2 rounded-lg bg-slate-800/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
                               title="Delete & End Meeting"
                             >
@@ -652,26 +839,115 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* TAB 2: ADMIN ACCOUNTS */}
+            {/* TAB 2: RECORDINGS */}
+            {activeTab === 'recordings' && (
+              <div className="space-y-6">
+                {recordings.length === 0 ? (
+                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
+                    <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 mx-auto mb-4">
+                      <Film className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-base font-semibold text-white">No recordings found</h4>
+                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                      Recordings will appear here after BigBlueButton meetings with recording enabled have ended and processed.
+                    </p>
+                    <button
+                      onClick={fetchRecordings}
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5" />
+                      <span>Check for New Recordings</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4">
+                    {recordings.map((rec) => (
+                      <div
+                        key={rec.recordId}
+                        className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition space-y-4 shadow-sm"
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-base font-bold text-white">
+                                {rec.name}
+                              </h4>
+                              <span className="text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full">
+                                Processed
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-400 flex items-center gap-3 mt-1">
+                              <span className="font-mono text-slate-500">ID: {rec.recordId}</span>
+                              <span>•</span>
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {new Date(rec.startTime).toLocaleDateString()}
+                              </span>
+                              {rec.lengthMinutes !== undefined && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3.5 h-3.5" />
+                                    {rec.lengthMinutes} mins
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {rec.playbackUrl ? (
+                              <>
+                                <a
+                                  href={rec.playbackUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-indigo-900/20"
+                                >
+                                  <Play className="w-3.5 h-3.5" />
+                                  <span>Watch Playback</span>
+                                </a>
+
+                                <button
+                                  onClick={() => copyText(rec.playbackUrl!, rec.recordId)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                                >
+                                  {copiedId === rec.recordId ? (
+                                    <>
+                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                                      <span className="text-emerald-400">Copied!</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-3.5 h-3.5" />
+                                      <span>Copy Playback Link</span>
+                                    </>
+                                  )}
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-xs text-slate-500 italic">Processing playback...</span>
+                            )}
+
+                            <button
+                              onClick={() => promptDeleteRecording(rec)}
+                              className="p-2 rounded-lg bg-slate-800/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
+                              title="Delete Recording"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: ADMIN ACCOUNTS */}
             {activeTab === 'admins' && (
               <div className="space-y-6">
-                {/* Architecture Banner */}
-                <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 flex-shrink-0 mt-0.5">
-                      <UserCheck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">
-                        Single Account Type: Administrator
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                        PulseEdu uses a single-role account architecture. There are no separate student or teacher roles. Every user account possesses complete administrative privileges to create and manage meetings and provision additional admin accounts.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Create Admin Form */}
                 {showCreateAdmin && (
                   <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-xl animate-in fade-in">
@@ -744,7 +1020,7 @@ export default function DashboardPage() {
                         <button
                           type="button"
                           onClick={() => setShowCreateAdmin(false)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -810,20 +1086,6 @@ export default function DashboardPage() {
                       </tbody>
                     </table>
                   </div>
-                </div>
-
-                {/* CLI Provisioning Documentation */}
-                <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-5 text-xs text-slate-400 space-y-2">
-                  <div className="flex items-center gap-2 font-semibold text-slate-200">
-                    <Server className="w-4 h-4 text-indigo-400" />
-                    <span>Command-Line Admin Provisioning Script</span>
-                  </div>
-                  <p>
-                    Admins can also be provisioned securely via terminal or automated CI/CD pipeline using the setup script:
-                  </p>
-                  <pre className="bg-slate-950 p-3 rounded-lg text-slate-300 font-mono overflow-x-auto text-[11px] border border-slate-800/80">
-npm run create-admin -- --email=admin2@pulseedu.online --password=SecurePassword123! --name="Secondary Admin"
-                  </pre>
                 </div>
               </div>
             )}

@@ -134,3 +134,72 @@ export async function endBBBMeeting({
     return false
   }
 }
+
+export interface BBBRecording {
+  recordId: string
+  meetingId: string
+  name: string
+  published: boolean
+  startTime: number
+  endTime: number
+  playbackUrl?: string
+  lengthMinutes?: number
+}
+
+export async function getBBBRecordings(meetingId?: string): Promise<BBBRecording[]> {
+  const params: Record<string, string> = {}
+  if (meetingId) params.meetingID = meetingId
+
+  const url = buildBBBUrl('getRecordings', params)
+  try {
+    const res = await fetch(url)
+    const xml = await res.text()
+    if (!xml.includes('<returncode>SUCCESS</returncode>')) {
+      return []
+    }
+
+    const recordings: BBBRecording[] = []
+    const recordingBlocks = xml.match(/<recording>[\s\S]*?<\/recording>/g) || []
+
+    for (const block of recordingBlocks) {
+      const recordIdMatch = block.match(/<recordID>([^<]+)<\/recordID>/)
+      const meetingIdMatch = block.match(/<meetingID>([^<]+)<\/meetingID>/)
+      const nameMatch = block.match(/<name>([^<]+)<\/name>/)
+      const publishedMatch = block.match(/<published>([^<]+)<\/published>/)
+      const startTimeMatch = block.match(/<startTime>([^<]+)<\/startTime>/)
+      const endTimeMatch = block.match(/<endTime>([^<]+)<\/endTime>/)
+      const urlMatch = block.match(/<url>([^<]+)<\/url>/)
+      const lengthMatch = block.match(/<length>([^<]+)<\/length>/)
+
+      if (recordIdMatch && meetingIdMatch) {
+        recordings.push({
+          recordId: recordIdMatch[1],
+          meetingId: meetingIdMatch[1],
+          name: nameMatch ? nameMatch[1] : 'Meeting Session Recording',
+          published: publishedMatch ? publishedMatch[1] === 'true' : true,
+          startTime: startTimeMatch ? Number(startTimeMatch[1]) : Date.now(),
+          endTime: endTimeMatch ? Number(endTimeMatch[1]) : Date.now(),
+          playbackUrl: urlMatch ? urlMatch[1] : undefined,
+          lengthMinutes: lengthMatch ? Number(lengthMatch[1]) : undefined,
+        })
+      }
+    }
+
+    return recordings
+  } catch (error) {
+    console.error('Failed to get BBB recordings:', error)
+    return []
+  }
+}
+
+export async function deleteBBBRecording(recordId: string): Promise<boolean> {
+  const url = buildBBBUrl('deleteRecordings', { recordID: recordId })
+  try {
+    const res = await fetch(url)
+    const xml = await res.text()
+    return xml.includes('<returncode>SUCCESS</returncode>')
+  } catch (error) {
+    console.error('Failed to delete BBB recording:', error)
+    return false
+  }
+}
