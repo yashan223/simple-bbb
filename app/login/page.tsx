@@ -3,7 +3,7 @@
 import React, { useState, Suspense } from 'react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Lock, Mail, ShieldAlert, ArrowRight, Video, CheckCircle2, Loader2 } from 'lucide-react'
+import { Lock, Mail, ShieldAlert, ArrowRight, Loader2 } from 'lucide-react'
 
 function LoginForm() {
   const router = useRouter()
@@ -73,7 +73,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@pulseedu.online"
+              placeholder="Enter your email"
               className="block w-full pl-10 pr-3 py-2.5 bg-slate-800/80 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
@@ -123,20 +123,7 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-slate-800 text-xs text-slate-400 space-y-3">
-        <div className="flex items-start gap-2.5">
-          <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <span>
-            <strong>Admin-Only Application:</strong> PulseEdu has no public registration. Every authenticated account is an Administrator.
-          </span>
-        </div>
-        <div className="flex items-start gap-2.5">
-          <Video className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
-          <span>
-            <strong>Meeting Participants:</strong> People invited to BigBlueButton sessions do not need an account and can join directly through their meeting link.
-          </span>
-        </div>
-      </div>
+
     </div>
   )
 }

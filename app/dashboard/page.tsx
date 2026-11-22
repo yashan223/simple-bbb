@@ -629,7 +629,7 @@ export default function DashboardPage() {
                     <input
                       type="email"
                       required
-                      placeholder="admin@pulseedu.online"
+                      placeholder="newadmin@example.com"
                       value={newAdminEmail}
                       onChange={(e) => setNewAdminEmail(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"

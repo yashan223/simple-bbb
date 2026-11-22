@@ -1,5 +1,16 @@
 import crypto from 'crypto'
 
+function normalizeBBBUrl(rawUrl: string): string {
+  const cleaned = rawUrl.trim().replace(/\/+$/, '')
+  if (cleaned.endsWith('/api')) {
+    return cleaned
+  }
+  if (cleaned.endsWith('/bigbluebutton')) {
+    return `${cleaned}/api`
+  }
+  return `${cleaned}/bigbluebutton/api`
+}
+
 function getBBBConfig() {
   const url = process.env.BIGBLUEBUTTON_URL
   const secret = process.env.BIGBLUEBUTTON_SECRET
@@ -9,7 +20,7 @@ function getBBBConfig() {
   }
 
   return {
-    url: url.replace(/\/$/, ''),
+    url: normalizeBBBUrl(url),
     secret,
   }
 }
