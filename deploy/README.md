@@ -108,7 +108,17 @@ pm2 startup
 
 ---
 
-## 4. Troubleshooting
+## 4. BigBlueButton Landing Page (Replace "Welcome to BigBlueButton!" with Logo)
+
+To brand the BigBlueButton logout and session ended landing page (`classroom.pulseedu.online/?reason=...`):
+
+```bash
+sudo cp /var/www/simple-bbb/deploy/bbb-index.html /var/www/bigbluebutton-default/index.html
+```
+
+---
+
+## 5. Troubleshooting
 
 - **Check Next.js response**:
   ```bash
