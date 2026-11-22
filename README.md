@@ -25,11 +25,14 @@ A clean, modern web management portal and meeting interface for BigBlueButton.
 Create a `.env` file in the root directory:
 
 ```env
-DATABASE_URL="postgresql://user:password@host:port/database"
-JWT_SECRET="your-32-character-secret"
+DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require"
+SESSION_SECRET="your_long_random_session_secret_32_chars_minimum"
+BIGBLUEBUTTON_URL="https://your-bbb-server.com/bigbluebutton/api"
+BIGBLUEBUTTON_SECRET="your_bbb_shared_secret"
 DEFAULT_ADMIN_EMAIL="admin@pulseedu.online"
-BBB_API_URL="https://your-bbb-server/bigbluebutton/api"
-BBB_SECRET="your-bbb-shared-secret"
+DEFAULT_ADMIN_PASSWORD="your_secure_admin_password"
+DEFAULT_ADMIN_NAME="Administrator"
+NEXT_PUBLIC_APP_NAME="PulseEdu"
 ```
 
 ### 2. Install Dependencies & Setup Database
