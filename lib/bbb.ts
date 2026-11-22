@@ -1,4 +1,6 @@
 import crypto from 'crypto'
+import fs from 'fs'
+import path from 'path'
 
 function normalizeBBBUrl(rawUrl: string): string {
   const cleaned = rawUrl.trim().replace(/\/+$/, '')
@@ -50,8 +52,21 @@ export function buildBBBUrl(
   return `${url}/${action}?${searchParams.toString()}`
 }
 
-const BLANK_WHITEBOARD_PDF_BASE64 =
-  'JVBERi0xLjQKMSAwIG9iaiA8PC9UeXBlIC9DYXRhbG9nIC9QYWdlcyAyIDAgUj4+IGVuZG9iagoyIDAgb2JqIDw8L1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDE+PiBlbmRvYmoKMyAwIG9iaiA8PC9UeXBlIC9QYWdlIC9QYXJlbnQgMiAwIFIgL01lZGlhQm94IFswIDAgMTkyMCAxMDgwXSAvUmVzb3VyY2VzIDw8Pj4+PiBlbmRvYmoKeHJlZgowIDQKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTggMDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAp0cmFpbGVyIDw8L1NpemUgNCAvUm9vdCAxIDAgUj4+CnN0YXJ0eHJlZgoyMDgKJSVFT0YK'
+let cachedPresentationBase64: string | null = null
+
+function getPresentationBase64(): string {
+  if (cachedPresentationBase64) return cachedPresentationBase64
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'presentation.pdf')
+    if (fs.existsSync(filePath)) {
+      cachedPresentationBase64 = fs.readFileSync(filePath).toString('base64')
+      return cachedPresentationBase64
+    }
+  } catch (e) {
+    console.error('Failed to read presentation.pdf:', e)
+  }
+  return ''
+}
 
 export async function createBBBMeeting({
   meetingId,
@@ -81,10 +96,11 @@ export async function createBBBMeeting({
     meetingExpireWhenLastUserLeftInMinutes: 3,
   })
 
+  const presentationBase64 = getPresentationBase64()
   const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <module name="presentation">
-    <document name="whiteboard.pdf" current="true" downloadable="false">${BLANK_WHITEBOARD_PDF_BASE64}</document>
+    <document url="https://pulseedu.online/presentation.pdf" filename="presentation.pdf" current="true">${presentationBase64}</document>
   </module>
 </modules>`
 
