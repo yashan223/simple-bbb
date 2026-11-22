@@ -460,9 +460,9 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-600">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
           <span className="text-sm font-medium">Loading PulseEdu Administrator Dashboard...</span>
         </div>
       </div>
@@ -470,30 +470,30 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-950 text-slate-100 overflow-hidden font-sans">
+    <div className="flex h-screen bg-slate-50 text-slate-900 overflow-hidden font-sans">
       {/* Confirmation Modal */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center flex-shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-slate-900">
                 {confirmModal.title}
               </h3>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
+            <p className="text-xs text-slate-600 leading-relaxed">
               {confirmModal.message}
             </p>
 
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 disabled={confirmLoading}
                 onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -501,7 +501,7 @@ export default function DashboardPage() {
                 type="button"
                 disabled={confirmLoading}
                 onClick={() => confirmModal.onConfirm()}
-                className="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-lg shadow-rose-900/30"
+                className="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-md shadow-rose-600/20"
               >
                 {confirmLoading ? (
                   <>
@@ -521,33 +521,33 @@ export default function DashboardPage() {
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+          className="fixed inset-0 z-40 bg-slate-900/40 backdrop-blur-xs md:hidden"
         />
       )}
 
       {/* LEFT SIDE PANEL (SIDEBAR) */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 md:w-72 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 ${
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 md:w-72 bg-white border-r border-slate-200 flex flex-col justify-between transition-transform duration-200 ease-in-out md:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col flex-1 min-h-0">
           {/* Sidebar Brand Header */}
-          <div className="h-20 px-6 border-b border-slate-800 flex items-center justify-between">
+          <div className="h-20 px-6 border-b border-slate-200 flex items-center justify-between">
             <div className="flex items-center py-2">
               <Image
                 src="/logo-wide.png"
                 alt="PulseEdu"
                 width={220}
                 height={60}
-                className="h-11 md:h-12 w-auto object-contain drop-shadow"
+                className="h-11 md:h-12 w-auto object-contain drop-shadow-sm"
                 priority
               />
             </div>
 
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 md:hidden transition cursor-pointer"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 md:hidden transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -555,7 +555,7 @@ export default function DashboardPage() {
 
           {/* Sidebar Nav Items */}
           <nav className="p-4 space-y-1.5 flex-1 overflow-y-auto">
-            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 px-3 pb-2">
+            <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 px-3 pb-2">
               Management
             </div>
 
@@ -567,8 +567,8 @@ export default function DashboardPage() {
               }}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
                 activeTab === 'meetings'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -579,7 +579,7 @@ export default function DashboardPage() {
                 className={`text-xs px-2 py-0.5 rounded-full font-mono ${
                   activeTab === 'meetings'
                     ? 'bg-indigo-500/30 text-white'
-                    : 'bg-slate-800 text-slate-400'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
                 }`}
               >
                 {meetings.length}
@@ -594,8 +594,8 @@ export default function DashboardPage() {
               }}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
                 activeTab === 'recordings'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -606,7 +606,7 @@ export default function DashboardPage() {
                 className={`text-xs px-2 py-0.5 rounded-full font-mono ${
                   activeTab === 'recordings'
                     ? 'bg-indigo-500/30 text-white'
-                    : 'bg-slate-800 text-slate-400'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
                 }`}
               >
                 {recordings.length}
@@ -621,8 +621,8 @@ export default function DashboardPage() {
               }}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
                 activeTab === 'admins'
-                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               <div className="flex items-center gap-3">
@@ -633,7 +633,7 @@ export default function DashboardPage() {
                 className={`text-xs px-2 py-0.5 rounded-full font-mono ${
                   activeTab === 'admins'
                     ? 'bg-indigo-500/30 text-white'
-                    : 'bg-slate-800 text-slate-400'
+                    : 'bg-slate-100 text-slate-600 border border-slate-200'
                 }`}
               >
                 {admins.length}
@@ -643,28 +643,28 @@ export default function DashboardPage() {
         </div>
 
         {/* Sidebar Footer User & Logout */}
-        <div className="p-4 border-t border-slate-800 bg-slate-900/60 space-y-3">
+        <div className="p-4 border-t border-slate-200 bg-slate-50 space-y-3">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/20 text-indigo-300 font-bold flex items-center justify-center text-sm border border-indigo-500/30 flex-shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 font-bold flex items-center justify-center text-sm border border-indigo-200 flex-shrink-0">
               {currentUser?.name?.charAt(0).toUpperCase() || 'A'}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+              <div className="text-xs font-semibold text-slate-900 truncate flex items-center gap-1.5">
                 <span>{currentUser?.name || 'Administrator'}</span>
                 {currentUser?.isDefaultAdmin && (
                   <span title="Primary Default Administrator">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   </span>
                 )}
               </div>
-              <div className="text-[11px] text-slate-400 truncate font-mono">
+              <div className="text-[11px] text-slate-500 truncate font-mono">
                 {currentUser?.email}
               </div>
             </div>
             {currentUser && (
               <button
                 onClick={() => openEditAdmin(currentUser)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
                 title="Edit Your Account"
               >
                 <Edit3 className="w-3.5 h-3.5" />
@@ -674,7 +674,7 @@ export default function DashboardPage() {
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-300 hover:text-rose-300 border border-slate-700/80 hover:border-rose-900/50 transition cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold rounded-lg bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Logout</span>
@@ -683,38 +683,38 @@ export default function DashboardPage() {
       </aside>
 
       {/* RIGHT MAIN PANEL */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
         {/* Main Header Bar */}
-        <header className="h-20 bg-slate-900/80 border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xs">
+        <header className="h-20 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xs shadow-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white bg-slate-800 md:hidden"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 md:hidden transition cursor-pointer"
             >
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 {activeTab === 'meetings' && (
                   <>
-                    <Video className="w-4 h-4 text-indigo-400" />
+                    <Video className="w-4 h-4 text-indigo-600" />
                     <span>Meetings Management</span>
                   </>
                 )}
                 {activeTab === 'recordings' && (
                   <>
-                    <Film className="w-4 h-4 text-indigo-400" />
+                    <Film className="w-4 h-4 text-indigo-600" />
                     <span>Session Recordings</span>
                   </>
                 )}
                 {activeTab === 'admins' && (
                   <>
-                    <Users className="w-4 h-4 text-indigo-400" />
+                    <Users className="w-4 h-4 text-indigo-600" />
                     <span>Administrator Accounts</span>
                   </>
                 )}
               </h2>
-              <p className="text-[11px] text-slate-400 hidden sm:block">
+              <p className="text-[11px] text-slate-500 hidden sm:block">
                 {activeTab === 'meetings' && 'Create, launch, manage, and end BigBlueButton sessions'}
                 {activeTab === 'recordings' && 'View, playback, and manage recorded meeting sessions'}
                 {activeTab === 'admins' && 'Provision and manage platform administrators'}
@@ -726,7 +726,7 @@ export default function DashboardPage() {
             {activeTab === 'meetings' && (
               <button
                 onClick={() => setShowCreateMeeting(!showCreateMeeting)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New Meeting</span>
@@ -737,9 +737,9 @@ export default function DashboardPage() {
               <button
                 onClick={fetchRecordings}
                 disabled={recordingsLoading}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer shadow-xs"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${recordingsLoading ? 'animate-spin text-indigo-400' : ''}`} />
+                <RefreshCw className={`w-3.5 h-3.5 ${recordingsLoading ? 'animate-spin text-indigo-600' : ''}`} />
                 <span>Refresh Recordings</span>
               </button>
             )}
@@ -747,7 +747,7 @@ export default function DashboardPage() {
             {activeTab === 'admins' && currentUser?.isDefaultAdmin && (
               <button
                 onClick={() => setShowCreateAdmin(!showCreateAdmin)}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-lg shadow-indigo-600/20 transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Add Admin Account</span>
@@ -757,32 +757,32 @@ export default function DashboardPage() {
         </header>
 
         {/* Scrollable Dashboard Body */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-6 bg-slate-50">
           <div className="max-w-6xl mx-auto space-y-6">
             {/* TAB 1: MEETINGS */}
             {activeTab === 'meetings' && (
               <div className="space-y-6">
                 {/* Create Meeting Modal / Card */}
                 {showCreateMeeting && (
-                  <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-xl relative animate-in fade-in">
-                    <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-indigo-400" />
+                  <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md relative animate-in fade-in">
+                    <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-indigo-600" />
                       Create BigBlueButton Meeting
                     </h3>
-                    <p className="text-xs text-slate-400 mb-6">
+                    <p className="text-xs text-slate-500 mb-6">
                       Admins join as host with full presentation controls. External participants receive a link and join as guests.
                     </p>
 
                     {meetingError && (
-                      <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
                         <span>{meetingError}</span>
                       </div>
                     )}
 
                     <form onSubmit={handleCreateMeeting} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="sm:col-span-2">
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Meeting Name / Topic *
                         </label>
                         <input
@@ -791,12 +791,12 @@ export default function DashboardPage() {
                           placeholder="Meeting name"
                           value={meetingName}
                           onChange={(e) => setMeetingName(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Attendee Password (Optional)
                         </label>
                         <input
@@ -804,7 +804,7 @@ export default function DashboardPage() {
                           placeholder="Attendee password (optional)"
                           value={attendeePassword}
                           onChange={(e) => setAttendeePassword(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                         <span className="text-[11px] text-slate-500">
                           Guests use this to enter.
@@ -812,7 +812,7 @@ export default function DashboardPage() {
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Welcome Message (Optional)
                         </label>
                         <input
@@ -820,7 +820,7 @@ export default function DashboardPage() {
                           placeholder="Welcome message (optional)"
                           value={welcomeMessage}
                           onChange={(e) => setWelcomeMessage(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                         <span className="text-[11px] text-slate-500">
                           Displayed in the BBB chat when joining.
@@ -833,25 +833,25 @@ export default function DashboardPage() {
                           id="recordMeeting"
                           checked={isRecorded}
                           onChange={(e) => setIsRecorded(e.target.checked)}
-                          className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-indigo-600 focus:ring-indigo-500"
+                          className="h-4 w-4 rounded border-slate-300 bg-slate-50 text-indigo-600 focus:ring-indigo-500"
                         />
-                        <label htmlFor="recordMeeting" className="text-xs font-medium text-slate-300">
+                        <label htmlFor="recordMeeting" className="text-xs font-medium text-slate-700">
                           Enable session recording in BigBlueButton
                         </label>
                       </div>
 
-                      <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+                      <div className="sm:col-span-2 flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
                         <button
                           type="button"
                           onClick={() => setShowCreateMeeting(false)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={meetingSubmitting}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer shadow-sm shadow-indigo-600/20"
                         >
                           {meetingSubmitting ? 'Creating Meeting...' : 'Create Meeting'}
                         </button>
@@ -862,17 +862,17 @@ export default function DashboardPage() {
 
                 {/* Meetings List */}
                 {meetings.length === 0 ? (
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 mx-auto mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-xs">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mx-auto mb-4">
                       <Video className="w-6 h-6" />
                     </div>
-                    <h4 className="text-base font-semibold text-white">No active meetings</h4>
-                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                    <h4 className="text-base font-semibold text-slate-900">No active meetings</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                       Create a new meeting to launch a BigBlueButton room and invite participants with a direct link.
                     </p>
                     <button
                       onClick={() => setShowCreateMeeting(true)}
-                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer"
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer shadow-sm shadow-indigo-600/20"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Create Meeting</span>
@@ -883,34 +883,34 @@ export default function DashboardPage() {
                     {meetings.map((meeting) => (
                       <div
                         key={meeting.id}
-                        className={`bg-slate-900 border rounded-xl p-5 transition space-y-4 shadow-sm ${
-                          meeting.isEnded ? 'border-slate-800/60 opacity-80' : 'border-slate-800 hover:border-slate-700'
+                        className={`bg-white border rounded-xl p-5 transition space-y-4 shadow-sm hover:shadow-md ${
+                          meeting.isEnded ? 'border-slate-200 opacity-75' : 'border-slate-200 hover:border-slate-300'
                         }`}
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-base font-bold text-white">
+                              <h4 className="text-base font-bold text-slate-900">
                                 {meeting.name}
                               </h4>
                               {meeting.isEnded ? (
-                                <span className="text-[10px] font-semibold bg-slate-800 border border-slate-700 text-slate-400 px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-semibold bg-slate-100 border border-slate-200 text-slate-600 px-2 py-0.5 rounded-full">
                                   Session Ended
                                 </span>
                               ) : (
-                                <span className="text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1.5">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                                <span className="text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full flex items-center gap-1.5">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                   Active Room
                                 </span>
                               )}
                               {meeting.isRecorded && (
-                                <span className="text-[10px] font-semibold bg-rose-500/10 border border-rose-500/30 text-rose-300 px-2 py-0.5 rounded-full">
+                                <span className="text-[10px] font-semibold bg-rose-50 border border-rose-200 text-rose-700 px-2 py-0.5 rounded-full">
                                   Recording Enabled
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-slate-400 flex items-center gap-3 mt-1">
-                              <span className="font-mono text-slate-500">ID: {meeting.meetingId}</span>
+                            <div className="text-xs text-slate-500 flex items-center gap-3 mt-1">
+                              <span className="font-mono text-slate-400">ID: {meeting.meetingId}</span>
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3.5 h-3.5" />
@@ -919,7 +919,7 @@ export default function DashboardPage() {
                               {meeting.isEnded && meeting.endedAt && (
                                 <>
                                   <span>•</span>
-                                  <span className="text-rose-400/90 font-medium">
+                                  <span className="text-rose-600 font-medium">
                                     Closed {new Date(meeting.endedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                   </span>
                                 </>
@@ -932,7 +932,7 @@ export default function DashboardPage() {
                               <>
                                 <button
                                   onClick={() => handleJoinAsModerator(meeting.id)}
-                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-emerald-900/20"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-emerald-600/20"
                                 >
                                   <ExternalLink className="w-3.5 h-3.5" />
                                   <span>Join as Host</span>
@@ -943,12 +943,12 @@ export default function DashboardPage() {
                                     const origin = window.location.origin
                                     copyText(`${origin}/join/${meeting.meetingId}`, meeting.meetingId)
                                   }}
-                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer shadow-xs"
                                 >
                                   {copiedId === meeting.meetingId ? (
                                     <>
-                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                      <span className="text-emerald-400">Copied!</span>
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span className="text-emerald-600">Copied!</span>
                                     </>
                                   ) : (
                                     <>
@@ -961,7 +961,7 @@ export default function DashboardPage() {
                                 {/* Host Option: End Meeting */}
                                 <button
                                   onClick={() => promptEndMeeting(meeting)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-500/10 hover:bg-rose-500/20 text-amber-300 hover:text-rose-300 text-xs font-semibold border border-amber-500/30 hover:border-rose-500/30 transition cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-amber-50 hover:bg-rose-50 text-amber-800 hover:text-rose-700 text-xs font-semibold border border-amber-200 hover:border-rose-200 transition cursor-pointer"
                                   title="End live meeting for everyone"
                                 >
                                   <PowerOff className="w-3.5 h-3.5" />
@@ -969,14 +969,14 @@ export default function DashboardPage() {
                                 </button>
                               </>
                             ) : (
-                              <span className="text-xs text-slate-500 italic px-2">
+                              <span className="text-xs text-slate-400 italic px-2">
                                 Room Closed
                               </span>
                             )}
 
                             <button
                               onClick={() => promptDeleteMeeting(meeting)}
-                              className="p-2 rounded-lg bg-slate-800/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
+                              className="p-2 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
                               title="Delete Record"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -984,30 +984,30 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        <div className="bg-slate-950/60 rounded-lg p-3 text-xs border border-slate-800/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div className="flex items-center gap-4 text-slate-400">
+                        <div className="bg-slate-50 rounded-lg p-3 text-xs border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div className="flex items-center gap-4 text-slate-600">
                             <div className="flex items-center gap-1.5">
-                              <KeyRound className="w-3.5 h-3.5 text-slate-500" />
+                              <KeyRound className="w-3.5 h-3.5 text-slate-400" />
                               <span>Guest Password:</span>
-                              <span className="font-mono text-slate-200 font-medium">
+                              <span className="font-mono text-slate-900 font-semibold">
                                 {meeting.attendeePassword || 'None (Open)'}
                               </span>
                             </div>
                             <div className="flex items-center gap-1.5">
-                              <Shield className="w-3.5 h-3.5 text-slate-500" />
+                              <Shield className="w-3.5 h-3.5 text-slate-400" />
                               <span>Host Password:</span>
-                              <span className="font-mono text-slate-200 font-medium">
+                              <span className="font-mono text-slate-900 font-semibold">
                                 {meeting.moderatorPassword}
                               </span>
                             </div>
                           </div>
 
-                          <div className="text-[11px] text-indigo-400">
+                          <div className="text-[11px] text-indigo-600 font-medium">
                             {meeting.isEnded ? (
-                              <span className="text-slate-500 italic">Join link disabled (session ended)</span>
+                              <span className="text-slate-400 italic">Join link disabled (session ended)</span>
                             ) : (
                               <>
-                                Public Join Link: <code className="bg-slate-900 px-1 py-0.5 rounded text-slate-300">/join/{meeting.meetingId}</code>
+                                Public Join Link: <code className="bg-slate-200/80 px-1 py-0.5 rounded text-slate-800">/join/{meeting.meetingId}</code>
                               </>
                             )}
                           </div>
@@ -1023,17 +1023,17 @@ export default function DashboardPage() {
             {activeTab === 'recordings' && (
               <div className="space-y-6">
                 {recordings.length === 0 ? (
-                  <div className="bg-slate-900 border border-slate-800 rounded-2xl p-12 text-center shadow-sm">
-                    <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 mx-auto mb-4">
+                  <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center shadow-xs">
+                    <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mx-auto mb-4">
                       <Film className="w-6 h-6" />
                     </div>
-                    <h4 className="text-base font-semibold text-white">No recordings found</h4>
-                    <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                    <h4 className="text-base font-semibold text-slate-900">No recordings found</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                       Recordings will appear here after BigBlueButton meetings with recording enabled have ended and processed.
                     </p>
                     <button
                       onClick={fetchRecordings}
-                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer"
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer shadow-sm shadow-indigo-600/20"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
                       <span>Check for New Recordings</span>
@@ -1044,20 +1044,20 @@ export default function DashboardPage() {
                     {recordings.map((rec) => (
                       <div
                         key={rec.recordId}
-                        className="bg-slate-900 border border-slate-800 rounded-xl p-5 hover:border-slate-700 transition space-y-4 shadow-sm"
+                        className="bg-white border border-slate-200 rounded-xl p-5 hover:border-slate-300 hover:shadow-md transition space-y-4 shadow-sm"
                       >
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                           <div>
                             <div className="flex items-center gap-2">
-                              <h4 className="text-base font-bold text-white">
+                              <h4 className="text-base font-bold text-slate-900">
                                 {rec.name}
                               </h4>
-                              <span className="text-[10px] font-semibold bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 px-2 py-0.5 rounded-full">
+                              <span className="text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full">
                                 Processed
                               </span>
                             </div>
-                            <div className="text-xs text-slate-400 flex items-center gap-3 mt-1">
-                              <span className="font-mono text-slate-500">ID: {rec.recordId}</span>
+                            <div className="text-xs text-slate-500 flex items-center gap-3 mt-1">
+                              <span className="font-mono text-slate-400">ID: {rec.recordId}</span>
                               <span>•</span>
                               <span className="flex items-center gap-1">
                                 <Calendar className="w-3.5 h-3.5" />
@@ -1082,7 +1082,7 @@ export default function DashboardPage() {
                                   href={rec.playbackUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-indigo-900/20"
+                                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-indigo-600/20"
                                 >
                                   <Play className="w-3.5 h-3.5" />
                                   <span>Watch Playback</span>
@@ -1090,12 +1090,12 @@ export default function DashboardPage() {
 
                                 <button
                                   onClick={() => copyText(rec.playbackUrl!, rec.recordId)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition cursor-pointer"
+                                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer shadow-xs"
                                 >
                                   {copiedId === rec.recordId ? (
                                     <>
-                                      <Check className="w-3.5 h-3.5 text-emerald-400" />
-                                      <span className="text-emerald-400">Copied!</span>
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span className="text-emerald-600">Copied!</span>
                                     </>
                                   ) : (
                                     <>
@@ -1106,12 +1106,12 @@ export default function DashboardPage() {
                                 </button>
                               </>
                             ) : (
-                              <span className="text-xs text-slate-500 italic">Processing playback...</span>
+                              <span className="text-xs text-slate-400 italic">Processing playback...</span>
                             )}
 
                             <button
                               onClick={() => promptDeleteRecording(rec)}
-                              className="p-2 rounded-lg bg-slate-800/80 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
+                              className="p-2 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
                               title="Delete Recording"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1130,42 +1130,42 @@ export default function DashboardPage() {
               <div className="space-y-6">
                 {/* Non-default admin notice */}
                 {!currentUser?.isDefaultAdmin && (
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-xs flex items-center gap-3">
-                    <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-3">
+                    <Lock className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>
-                      Only the primary default administrator (<strong className="text-slate-200">admin@pulseedu.online</strong>) can provision new admin accounts or edit the default administrator account.
+                      Only the primary default administrator (<strong className="font-semibold text-amber-950">admin@pulseedu.online</strong>) can provision new admin accounts or edit the default administrator account.
                     </span>
                   </div>
                 )}
 
                 {/* Create Admin Form (Default Admin Only) */}
                 {showCreateAdmin && currentUser?.isDefaultAdmin && (
-                  <div className="bg-slate-900 border border-indigo-500/30 rounded-2xl p-6 shadow-xl animate-in fade-in">
-                    <h3 className="text-base font-bold text-white mb-2 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md animate-in fade-in">
+                    <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-amber-500" />
                       Provision Additional Admin Account
                     </h3>
-                    <p className="text-xs text-slate-400 mb-6">
+                    <p className="text-xs text-slate-500 mb-6">
                       Only the primary default administrator can provision new administrator accounts. Visitors cannot self-register.
                     </p>
 
                     {adminError && (
-                      <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                      <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
                         <span>{adminError}</span>
                       </div>
                     )}
 
                     {adminSuccess && (
-                      <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                        <Check className="w-4 h-4 flex-shrink-0" />
+                      <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                        <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
                         <span>{adminSuccess}</span>
                       </div>
                     )}
 
                     <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Full Name *
                         </label>
                         <input
@@ -1174,12 +1174,12 @@ export default function DashboardPage() {
                           placeholder="Admin name"
                           value={newAdminName}
                           onChange={(e) => setNewAdminName(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Email Address *
                         </label>
                         <input
@@ -1188,12 +1188,12 @@ export default function DashboardPage() {
                           placeholder="Email address"
                           value={newAdminEmail}
                           onChange={(e) => setNewAdminEmail(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Initial Password *
                         </label>
                         <input
@@ -1202,22 +1202,22 @@ export default function DashboardPage() {
                           placeholder="Min 8 characters"
                           value={newAdminPassword}
                           onChange={(e) => setNewAdminPassword(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                         />
                       </div>
 
-                      <div className="sm:col-span-3 flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                      <div className="sm:col-span-3 flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
                         <button
                           type="button"
                           onClick={() => setShowCreateAdmin(false)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
                         >
                           Cancel
                         </button>
                         <button
                           type="submit"
                           disabled={adminSubmitting}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer"
+                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer shadow-sm shadow-indigo-600/20"
                         >
                           {adminSubmitting ? 'Creating Admin...' : 'Create Admin Account'}
                         </button>
@@ -1227,17 +1227,17 @@ export default function DashboardPage() {
                 )}
 
                 {/* Admin Accounts Table */}
-                <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
-                  <div className="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <Users className="w-4 h-4 text-indigo-400" />
+                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
+                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-indigo-600" />
                       Active Administrators ({admins.length})
                     </h4>
                   </div>
 
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-950/60 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                      <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
                         <tr>
                           <th className="py-3 px-5">Administrator</th>
                           <th className="py-3 px-5">Email</th>
@@ -1246,41 +1246,41 @@ export default function DashboardPage() {
                           <th className="py-3 px-5 text-right">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-800">
+                      <tbody className="divide-y divide-slate-100">
                         {admins.map((admin) => (
-                          <tr key={admin.id} className="hover:bg-slate-800/40 transition">
-                            <td className="py-3 px-5 font-semibold text-white flex items-center gap-2.5">
+                          <tr key={admin.id} className="hover:bg-slate-50/80 transition">
+                            <td className="py-3 px-5 font-semibold text-slate-900 flex items-center gap-2.5">
                               <div className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
                                 admin.isDefaultAdmin
-                                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                                  : 'bg-indigo-600/20 text-indigo-300'
+                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
                               }`}>
                                 {admin.name.charAt(0).toUpperCase()}
                               </div>
                               <span>{admin.name}</span>
                               {admin.id === currentUser?.id && (
-                                <span className="text-[10px] bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded">
+                                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-medium">
                                   You
                                 </span>
                               )}
                             </td>
-                            <td className="py-3 px-5 text-slate-300 font-mono">
+                            <td className="py-3 px-5 text-slate-600 font-mono">
                               {admin.email}
                             </td>
                             <td className="py-3 px-5">
                               {admin.isDefaultAdmin ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-300 px-2.5 py-0.5 rounded-full">
-                                  <ShieldCheck className="w-3 h-3 text-amber-400" />
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full">
+                                  <ShieldCheck className="w-3 h-3 text-amber-600" />
                                   Default Admin
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 px-2.5 py-0.5 rounded-full">
-                                  <Shield className="w-3 h-3 text-indigo-400" />
+                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-0.5 rounded-full">
+                                  <Shield className="w-3 h-3 text-indigo-600" />
                                   Admin
                                 </span>
                               )}
                             </td>
-                            <td className="py-3 px-5 text-slate-400">
+                            <td className="py-3 px-5 text-slate-500">
                               {new Date(admin.createdAt).toLocaleDateString()}
                             </td>
                             <td className="py-3 px-5 text-right">
@@ -1289,18 +1289,18 @@ export default function DashboardPage() {
                                   currentUser?.isDefaultAdmin ? (
                                     <button
                                       onClick={() => openEditAdmin(admin)}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition cursor-pointer"
+                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 transition cursor-pointer shadow-xs"
                                       title="Edit Default Administrator"
                                     >
-                                      <Edit3 className="w-3 h-3 text-amber-400" />
+                                      <Edit3 className="w-3 h-3 text-amber-600" />
                                       <span>Edit</span>
                                     </button>
                                   ) : (
                                     <span
-                                      className="inline-flex items-center gap-1 text-[11px] text-slate-500 font-medium"
+                                      className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium"
                                       title="Only the default administrator can edit this account"
                                     >
-                                      <Lock className="w-3 h-3 text-slate-500" />
+                                      <Lock className="w-3 h-3 text-slate-400" />
                                       <span>Protected</span>
                                     </span>
                                   )
@@ -1309,17 +1309,17 @@ export default function DashboardPage() {
                                     {(currentUser?.isDefaultAdmin || currentUser?.id === admin.id) && (
                                       <button
                                         onClick={() => openEditAdmin(admin)}
-                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium border border-slate-700 transition cursor-pointer"
+                                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 transition cursor-pointer shadow-xs"
                                         title="Edit Administrator"
                                       >
-                                        <Edit3 className="w-3 h-3 text-indigo-400" />
+                                        <Edit3 className="w-3 h-3 text-indigo-600" />
                                         <span>Edit</span>
                                       </button>
                                     )}
                                     {currentUser?.isDefaultAdmin && (
                                       <button
                                         onClick={() => promptDeleteAdmin(admin)}
-                                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-rose-950/40 text-slate-400 hover:text-rose-400 border border-slate-700 hover:border-rose-900/50 transition cursor-pointer"
+                                        className="p-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
                                         title="Remove Administrator"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
@@ -1343,14 +1343,14 @@ export default function DashboardPage() {
 
       {/* Edit Admin Modal */}
       {editingAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2 text-white font-bold text-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
                 {editingAdmin.isDefaultAdmin ? (
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <ShieldCheck className="w-4 h-4 text-amber-500" />
                 ) : (
-                  <Shield className="w-4 h-4 text-indigo-400" />
+                  <Shield className="w-4 h-4 text-indigo-600" />
                 )}
                 <span>
                   {editingAdmin.id === currentUser?.id ? 'Edit Your Account' : 'Edit Administrator'}
@@ -1358,41 +1358,41 @@ export default function DashboardPage() {
               </div>
               <button
                 onClick={() => setEditingAdmin(null)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="text-xs text-slate-400 space-y-1">
+            <div className="text-xs text-slate-500 space-y-1">
               <div>
-                Account Email: <strong className="text-slate-200 font-mono">{editingAdmin.email}</strong>
+                Account Email: <strong className="text-slate-900 font-mono">{editingAdmin.email}</strong>
               </div>
               {editingAdmin.isDefaultAdmin && (
-                <div className="text-amber-400/90 text-[11px] flex items-center gap-1 pt-0.5">
-                  <ShieldCheck className="w-3 h-3" />
+                <div className="text-amber-700 text-[11px] flex items-center gap-1 pt-0.5 font-medium">
+                  <ShieldCheck className="w-3 h-3 text-amber-500" />
                   <span>Primary Default Administrator</span>
                 </div>
               )}
             </div>
 
             {editAdminError && (
-              <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+              <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
                 <span>{editAdminError}</span>
               </div>
             )}
 
             {editAdminSuccess && (
-              <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
-                <Check className="w-4 h-4 flex-shrink-0" />
+              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
                 <span>{editAdminSuccess}</span>
               </div>
             )}
 
             <form onSubmit={handleUpdateAdmin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                   Full Name *
                 </label>
                 <input
@@ -1401,12 +1401,12 @@ export default function DashboardPage() {
                   placeholder="Enter administrator name"
                   value={editAdminName}
                   onChange={(e) => setEditAdminName(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                   New Password (Optional)
                 </label>
                 <input
@@ -1414,23 +1414,23 @@ export default function DashboardPage() {
                   placeholder="Leave blank to keep current password"
                   value={editAdminPassword}
                   onChange={(e) => setEditAdminPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
                 />
                 <p className="text-[10px] text-slate-500 mt-1">Must be at least 8 characters if changing.</p>
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setEditingAdmin(null)}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={editAdminSubmitting}
-                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5"
+                  className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer flex items-center gap-1.5 shadow-sm shadow-indigo-600/20"
                 >
                   {editAdminSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                   <span>{editAdminSubmitting ? 'Saving...' : 'Save Changes'}</span>

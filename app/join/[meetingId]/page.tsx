@@ -3,8 +3,18 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
-import { Shield, User, KeyRound, AlertCircle, ArrowRight, Loader2, Sparkles, LayoutDashboard, Clock } from 'lucide-react'
+import { useParams, useRouter } from 'next/navigation'
+import {
+  User,
+  KeyRound,
+  Shield,
+  Sparkles,
+  ArrowRight,
+  AlertCircle,
+  Clock,
+  LayoutDashboard,
+  Loader2
+} from 'lucide-react'
 
 interface PublicMeetingInfo {
   name: string
@@ -23,12 +33,14 @@ interface PublicMeetingInfo {
 
 export default function JoinMeetingPage() {
   const params = useParams()
+  const router = useRouter()
   const meetingId = params.meetingId as string
 
   const [meeting, setMeeting] = useState<PublicMeetingInfo | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Form states
   const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
   const [joining, setJoining] = useState(false)
@@ -41,18 +53,19 @@ export default function JoinMeetingPage() {
         const data = await res.json()
 
         if (!res.ok) {
-          setError(data.error || 'Meeting not found or link has expired.')
+          setError(data.error || 'Failed to load meeting details')
           setLoading(false)
           return
         }
 
         setMeeting(data)
+        // If current visitor is authenticated as admin, pre-fill their name
         if (data.isAuthenticated && data.adminUser?.name) {
           setDisplayName(data.adminUser.name)
         }
       } catch (err) {
-        console.error('Failed to load meeting:', err)
-        setError('Network error while connecting to meeting.')
+        console.error('Fetch meeting info error:', err)
+        setError('Network error loading meeting details')
       } finally {
         setLoading(false)
       }
@@ -66,12 +79,6 @@ export default function JoinMeetingPage() {
   async function handleJoin(e: React.FormEvent) {
     e.preventDefault()
     setJoinError(null)
-
-    if (!displayName.trim()) {
-      setJoinError('Please enter your display name')
-      return
-    }
-
     setJoining(true)
 
     try {
@@ -79,7 +86,7 @@ export default function JoinMeetingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          displayName: displayName.trim(),
+          displayName,
           password: password || undefined,
         }),
       })
@@ -87,30 +94,31 @@ export default function JoinMeetingPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setJoinError(data.error || 'Failed to enter meeting room')
+        setJoinError(data.error || 'Unable to join meeting session')
         setJoining(false)
         return
       }
 
+      // Redirect directly to BigBlueButton join URL
       if (data.joinUrl) {
         window.location.href = data.joinUrl
       } else {
-        setJoinError('Invalid response from meeting server')
+        setJoinError('Join URL was not returned by the server.')
         setJoining(false)
       }
     } catch (err) {
       console.error('Join error:', err)
-      setJoinError('Connection error while joining meeting')
+      setJoinError('A network error occurred while connecting to BigBlueButton.')
       setJoining(false)
     }
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center text-slate-600">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <span className="text-sm font-medium">Connecting to PulseEdu Virtual Classroom...</span>
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+          <span className="text-sm font-medium">Preparing meeting room...</span>
         </div>
       </div>
     )
@@ -118,19 +126,19 @@ export default function JoinMeetingPage() {
 
   if (error || !meeting) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-4 shadow-xl">
+          <div className="w-12 h-12 rounded-xl bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center mx-auto">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-white">Meeting Unavailable</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-lg font-bold text-slate-900">Meeting Unavailable</h2>
+          <p className="text-xs text-slate-600">
             {error || 'This meeting link is invalid or the session has ended.'}
           </p>
           <div className="pt-2">
             <Link
               href="/login"
-              className="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium"
+              className="text-xs text-indigo-600 hover:text-indigo-500 underline font-medium"
             >
               Sign in as an administrator
             </Link>
@@ -143,30 +151,30 @@ export default function JoinMeetingPage() {
   // If meeting was ended by the host: block rejoining completely!
   if (meeting.isEnded) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-2xl">
+      <div className="min-h-screen bg-slate-50 text-slate-900 flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white border border-slate-200 rounded-2xl p-8 text-center space-y-4 shadow-xl">
           <div className="flex justify-center mb-2">
             <Image
               src="/logo-wide.png"
               alt="PulseEdu"
               width={180}
               height={45}
-              className="h-9 w-auto object-contain drop-shadow"
+              className="h-9 w-auto object-contain drop-shadow-sm"
               priority
             />
           </div>
-          <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 flex items-center justify-center mx-auto">
-            <Clock className="w-6 h-6 text-slate-400" />
+          <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 text-slate-500 flex items-center justify-center mx-auto">
+            <Clock className="w-6 h-6 text-slate-500" />
           </div>
-          <h2 className="text-lg font-bold text-white">This Meeting Has Ended</h2>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            The host has concluded <strong className="text-slate-200">{meeting.name}</strong>. This session is closed and no further participants can join.
+          <h2 className="text-lg font-bold text-slate-900">This Meeting Has Ended</h2>
+          <p className="text-xs text-slate-600 leading-relaxed">
+            The host has concluded <strong className="text-slate-800">{meeting.name}</strong>. This session is closed and no further participants can join.
           </p>
           {meeting.isAuthenticated && (
             <div className="pt-3">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-md shadow-indigo-600/20"
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 <span>Return to Admin Dashboard</span>
@@ -181,7 +189,7 @@ export default function JoinMeetingPage() {
   const isHost = meeting.isAuthenticated
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-3">
           <Image
@@ -189,34 +197,34 @@ export default function JoinMeetingPage() {
             alt="PulseEdu"
             width={200}
             height={50}
-            className="h-10 w-auto object-contain drop-shadow"
+            className="h-10 w-auto object-contain drop-shadow-sm"
             priority
           />
         </div>
-        <h1 className="text-xl font-bold tracking-tight text-white">
+        <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Join BigBlueButton Session
         </h1>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500">
           PulseEdu Live Virtual Classroom
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-slate-900 border border-slate-800 py-8 px-6 shadow-2xl rounded-2xl sm:px-10 space-y-6">
+        <div className="bg-white border border-slate-200 py-8 px-6 shadow-xl rounded-2xl sm:px-10 space-y-6">
           {/* Meeting Details Card */}
-          <div className="bg-slate-950/70 border border-slate-800 rounded-xl p-4 text-xs space-y-2">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-slate-400">Session Topic:</span>
-              <span className="font-bold text-white text-sm">{meeting.name}</span>
+              <span className="text-slate-500 font-medium">Session Topic:</span>
+              <span className="font-bold text-slate-900 text-sm">{meeting.name}</span>
             </div>
             {meeting.welcomeMessage && (
-              <div className="text-slate-400 pt-1 border-t border-slate-800/80 italic">
+              <div className="text-slate-600 pt-1 border-t border-slate-200 italic">
                 "{meeting.welcomeMessage}"
               </div>
             )}
             {meeting.isRecorded && (
-              <div className="text-[11px] text-amber-400/90 pt-1 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <div className="text-[11px] text-amber-700 pt-1 flex items-center gap-1.5 font-medium">
+                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <span>Notice: This session may be recorded by the host.</span>
               </div>
             )}
@@ -224,26 +232,26 @@ export default function JoinMeetingPage() {
 
           {/* Host vs Guest Status Banner */}
           {isHost ? (
-            <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl text-xs space-y-1.5">
+            <div className="bg-emerald-50 border border-emerald-200 p-3.5 rounded-xl text-xs space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 font-bold text-emerald-400">
+                <span className="inline-flex items-center gap-1.5 font-bold text-emerald-700">
                   <Shield className="w-4 h-4" />
                   Authenticated as Host
                 </span>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded-full border border-emerald-200">
                   Moderator Privileges
                 </span>
               </div>
-              <p className="text-slate-300 text-[11px] leading-relaxed">
-                Signed in as <strong className="text-white">{meeting.adminUser?.name}</strong> ({meeting.adminUser?.email}). You will join with full host and moderator controls.
+              <p className="text-emerald-900 text-[11px] leading-relaxed">
+                Signed in as <strong className="font-semibold">{meeting.adminUser?.name}</strong> ({meeting.adminUser?.email}). You will join with full host and moderator controls.
               </p>
             </div>
           ) : (
-            <div className="bg-slate-950/50 border border-slate-800 p-3 rounded-lg text-xs text-slate-400 flex items-center justify-between">
-              <span>Joining as: <strong className="text-slate-200">Guest Participant</strong></span>
+            <div className="bg-slate-50 border border-slate-200 p-3 rounded-lg text-xs text-slate-600 flex items-center justify-between">
+              <span>Joining as: <strong className="text-slate-800">Guest Participant</strong></span>
               <Link
                 href="/login"
-                className="text-indigo-400 hover:text-indigo-300 underline font-medium text-[11px]"
+                className="text-indigo-600 hover:text-indigo-500 underline font-medium text-[11px]"
               >
                 Host login
               </Link>
@@ -251,8 +259,8 @@ export default function JoinMeetingPage() {
           )}
 
           {joinError && (
-            <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs text-rose-300 flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
+            <div className="rounded-lg bg-rose-50 border border-rose-200 p-3 text-xs text-rose-700 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
               <span>{joinError}</span>
             </div>
           )}
@@ -261,12 +269,12 @@ export default function JoinMeetingPage() {
             <div>
               <label
                 htmlFor="displayName"
-                className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1"
+                className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1"
               >
                 {isHost ? 'Host Display Name *' : 'Your Display Name *'}
               </label>
               <div className="relative rounded-lg shadow-sm">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                   <User className="h-4 w-4" />
                 </div>
                 <input
@@ -276,7 +284,7 @@ export default function JoinMeetingPage() {
                   placeholder={isHost ? 'Host Name' : 'Enter your name'}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                  className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm transition"
                 />
               </div>
             </div>
@@ -286,12 +294,12 @@ export default function JoinMeetingPage() {
               <div>
                 <label
                   htmlFor="meetingPassword"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1"
                 >
                   Meeting Password
                 </label>
                 <div className="relative rounded-lg shadow-sm">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                     <KeyRound className="h-4 w-4" />
                   </div>
                   <input
@@ -301,7 +309,7 @@ export default function JoinMeetingPage() {
                     placeholder="Enter attendee password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
+                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm transition"
                   />
                 </div>
               </div>
@@ -312,8 +320,8 @@ export default function JoinMeetingPage() {
               disabled={joining}
               className={`w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 transition cursor-pointer ${
                 isHost
-                  ? 'bg-emerald-600 hover:bg-emerald-500 focus:ring-emerald-500 shadow-emerald-900/30'
-                  : 'bg-indigo-600 hover:bg-indigo-500 focus:ring-indigo-500 shadow-indigo-900/30'
+                  ? 'bg-emerald-600 hover:bg-emerald-500 focus:ring-emerald-500 shadow-md shadow-emerald-600/20'
+                  : 'bg-indigo-600 hover:bg-indigo-500 focus:ring-indigo-500 shadow-md shadow-indigo-600/20'
               }`}
             >
               {joining ? (
@@ -344,7 +352,7 @@ export default function JoinMeetingPage() {
             <div className="pt-2 text-center">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-800 transition font-medium"
               >
                 <LayoutDashboard className="w-3.5 h-3.5" />
                 <span>Return to Admin Dashboard</span>
@@ -352,7 +360,7 @@ export default function JoinMeetingPage() {
             </div>
           )}
 
-          <div className="pt-4 border-t border-slate-800 text-center text-[11px] text-slate-500">
+          <div className="pt-4 border-t border-slate-200 text-center text-[11px] text-slate-400">
             Powered by BigBlueButton™ and PulseEdu
           </div>
         </div>
