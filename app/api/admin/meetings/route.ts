@@ -3,7 +3,7 @@ import { z } from 'zod'
 import crypto from 'crypto'
 import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/dal'
-import { createBBBMeeting, isBBBMeetingRunning } from '@/lib/bbb'
+import { createBBBMeeting } from '@/lib/bbb'
 
 const CreateMeetingSchema = z.object({
   name: z.string().min(2, 'Meeting name must be at least 2 characters'),
@@ -26,30 +26,6 @@ export async function GET() {
     const meetings = await prisma.meeting.findMany({
       orderBy: { createdAt: 'desc' },
     })
-
-    // Check if any active meeting has expired on BBB (empty for 3 minutes)
-    const threeMinutesAgo = new Date(Date.now() - 3 * 60 * 1000)
-    const activeCandidates = meetings.filter((m) => !m.isEnded && m.createdAt < threeMinutesAgo)
-
-    if (activeCandidates.length > 0) {
-      await Promise.all(
-        activeCandidates.map(async (m) => {
-          try {
-            const running = await isBBBMeetingRunning(m.meetingId)
-            if (!running) {
-              await prisma.meeting.update({
-                where: { id: m.id },
-                data: { isEnded: true, endedAt: new Date() },
-              })
-              m.isEnded = true
-              m.endedAt = new Date()
-            }
-          } catch {
-            // Ignore individual check errors to keep endpoint resilient
-          }
-        })
-      )
-    }
 
     return NextResponse.json({ meetings })
   } catch (error) {

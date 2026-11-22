@@ -79,7 +79,6 @@ export async function createBBBMeeting({
     welcome: welcomeMessage || `Welcome to ${name}!`,
     record: isRecorded ? 'true' : 'false',
     maxParticipants: maxParticipants && maxParticipants > 0 ? maxParticipants : undefined,
-    meetingExpireIfNoUserJoinedInMinutes: 3,
     meetingExpireWhenLastUserLeftInMinutes: 3,
   })
 
