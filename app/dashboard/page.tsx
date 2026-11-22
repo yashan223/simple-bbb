@@ -521,8 +521,8 @@ export default function DashboardPage() {
       >
         <div className="flex flex-col flex-1 min-h-0">
 
-          <div className="h-20 px-6 border-b border-slate-200 flex items-center justify-between">
-            <div className="flex items-center py-2">
+          <div className="h-20 px-4 border-b border-slate-200 flex items-center justify-center relative">
+            <div className="flex items-center justify-center py-2">
               <Image
                 src="/logo-wide.png"
                 alt="PulseEdu"
@@ -535,7 +535,7 @@ export default function DashboardPage() {
 
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 md:hidden transition cursor-pointer"
+              className="absolute right-3 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 md:hidden transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
