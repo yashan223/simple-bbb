@@ -51,7 +51,7 @@ npm run create-admin -- --email=admin@pulseedu.online --password=YourSecurePassw
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to access the dashboard.
+Open [http://localhost:4444](http://localhost:4444) to access the dashboard.
 
 ## Available Scripts
 

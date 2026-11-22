@@ -1,0 +1,16 @@
+[Unit]
+Description=PulseEdu BigBlueButton Web Portal (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/bbb-web
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=PORT=4444
+
+[Install]
+WantedBy=multi-user.target
