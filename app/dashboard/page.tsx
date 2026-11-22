@@ -16,7 +16,6 @@ import {
   KeyRound,
   Calendar,
   AlertCircle,
-  Sparkles,
   Menu,
   X,
   Film,
@@ -748,7 +747,7 @@ export default function DashboardPage() {
                 {showCreateMeeting && (
                   <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md relative animate-in fade-in">
                     <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-indigo-600" />
+                      <Video className="w-4 h-4 text-indigo-600" />
                       Create BigBlueButton Meeting
                     </h3>
                     <p className="text-xs text-slate-500 mb-6">
