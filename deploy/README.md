@@ -43,7 +43,7 @@ If using Nginx as your web server / SSL terminator:
    ```
 2. Generate SSL with Certbot:
    ```bash
-   sudo certbot --nginx -d pulseedu.online -d www.pulseedu.online
+   sudo certbot --nginx -d meeting.pulseedu.online
    ```
 3. Test and reload Nginx:
    ```bash
@@ -60,8 +60,8 @@ If using HAProxy for high availability and load balancing:
 1. Combine certificate and private key into a single `.pem` file for HAProxy:
    ```bash
    sudo mkdir -p /etc/ssl/pulseedu
-   sudo cat /etc/letsencrypt/live/pulseedu.online/fullchain.pem /etc/letsencrypt/live/pulseedu.online/privkey.pem > /etc/ssl/pulseedu/pulseedu.pem
-   sudo chmod 600 /etc/ssl/pulseedu/pulseedu.pem
+   sudo cat /etc/letsencrypt/live/meeting.pulseedu.online/fullchain.pem /etc/letsencrypt/live/meeting.pulseedu.online/privkey.pem > /etc/ssl/pulseedu/meeting.pulseedu.online.pem
+   sudo chmod 600 /etc/ssl/pulseedu/meeting.pulseedu.online.pem
    ```
 2. Copy configuration:
    ```bash

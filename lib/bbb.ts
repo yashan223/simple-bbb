@@ -102,7 +102,7 @@ export async function createBBBMeeting({
   const xmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 <modules>
   <module name="presentation">
-    <document url="https://pulseedu.online/presentation.pdf" filename="presentation.pdf" current="true">${presentationBase64}</document>
+    <document url="https://meeting.pulseedu.online/presentation.pdf" filename="presentation.pdf" current="true">${presentationBase64}</document>
   </module>
 </modules>`
 
