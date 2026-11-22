@@ -533,33 +533,21 @@ export default function DashboardPage() {
       >
         <div className="flex flex-col flex-1 min-h-0">
           {/* Sidebar Brand Header */}
-          <div className="h-16 px-5 border-b border-slate-800 flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="h-20 px-6 border-b border-slate-800 flex items-center justify-between">
+            <div className="flex items-center py-2">
               <Image
-                src="/icon.png"
+                src="/logo-wide.png"
                 alt="PulseEdu"
-                width={32}
-                height={32}
-                className="rounded-lg shadow-sm"
+                width={220}
+                height={60}
+                className="h-11 md:h-12 w-auto object-contain drop-shadow"
+                priority
               />
-              <div className="flex flex-col">
-                <Image
-                  src="/logo-wide.png"
-                  alt="PulseEdu"
-                  width={110}
-                  height={26}
-                  className="h-6 w-auto object-contain"
-                  priority
-                />
-                <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">
-                  Admin Portal
-                </span>
-              </div>
             </div>
 
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 rounded-lg text-slate-400 hover:text-white md:hidden"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 md:hidden transition cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -697,7 +685,7 @@ export default function DashboardPage() {
       {/* RIGHT MAIN PANEL */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Main Header Bar */}
-        <header className="h-16 bg-slate-900/80 border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xs">
+        <header className="h-20 bg-slate-900/80 border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between sticky top-0 z-30 backdrop-blur-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}

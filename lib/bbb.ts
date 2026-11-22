@@ -79,6 +79,8 @@ export async function createBBBMeeting({
     welcome: welcomeMessage || `Welcome to ${name}!`,
     record: isRecorded ? 'true' : 'false',
     maxParticipants: maxParticipants && maxParticipants > 0 ? maxParticipants : undefined,
+    meetingExpireIfNoUserJoinedInMinutes: 3,
+    meetingExpireWhenLastUserLeftInMinutes: 3,
   })
 
   // Pre-load clean blank whiteboard presentation to replace BBB default branded slides
@@ -148,6 +150,49 @@ export async function endBBBMeeting({
   } catch (error) {
     console.error('BBB endMeeting error:', error)
     return false
+  }
+}
+
+/**
+ * Checks if a meeting is actively running on BigBlueButton
+ */
+export async function isBBBMeetingRunning(meetingId: string): Promise<boolean> {
+  const url = buildBBBUrl('isMeetingRunning', { meetingID: meetingId })
+  try {
+    const res = await fetch(url)
+    const xml = await res.text()
+    const runningMatch = xml.match(/<running>(\w+)<\/running>/)
+    return runningMatch ? runningMatch[1] === 'true' : false
+  } catch (error) {
+    console.error('BBB isMeetingRunning error:', error)
+    return false
+  }
+}
+
+/**
+ * Gets live meeting info from BigBlueButton
+ */
+export async function getBBBMeetingInfo(meetingId: string): Promise<{
+  success: boolean
+  running: boolean
+  participantCount: number
+}> {
+  const url = buildBBBUrl('getMeetingInfo', { meetingID: meetingId })
+  try {
+    const res = await fetch(url)
+    const xml = await res.text()
+    const returncodeMatch = xml.match(/<returncode>(\w+)<\/returncode>/)
+    const isRunningMatch = xml.match(/<running>(\w+)<\/running>/)
+    const participantCountMatch = xml.match(/<participantCount>(\d+)<\/participantCount>/)
+
+    return {
+      success: returncodeMatch ? returncodeMatch[1] === 'SUCCESS' : false,
+      running: isRunningMatch ? isRunningMatch[1] === 'true' : false,
+      participantCount: participantCountMatch ? parseInt(participantCountMatch[1], 10) : 0,
+    }
+  } catch (error) {
+    console.error('BBB getMeetingInfo error:', error)
+    return { success: false, running: false, participantCount: 0 }
   }
 }
 
