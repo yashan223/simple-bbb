@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { verifyAdminSession } from '@/lib/dal'
 
 interface RouteContext {
   params: Promise<{ meetingId: string }>
 }
 
 // GET /api/meetings/[meetingId]/public-info
-// Public access: external participants checking meeting details before joining
+// Returns meeting info and checks if the visitor is currently authenticated as an admin
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params
@@ -25,12 +26,21 @@ export async function GET(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
+    const auth = await verifyAdminSession()
+
     return NextResponse.json({
       name: meeting.name,
       meetingId: meeting.meetingId,
       welcomeMessage: meeting.welcomeMessage,
       isRecorded: meeting.isRecorded,
       hasPassword: Boolean(meeting.attendeePassword),
+      isAuthenticated: Boolean(auth?.isAuth),
+      adminUser: auth?.user
+        ? {
+            name: auth.user.name,
+            email: auth.user.email,
+          }
+        : null,
     })
   } catch (error) {
     console.error('Failed to get public meeting info:', error)

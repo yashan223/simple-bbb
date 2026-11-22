@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { createBBBMeeting, getBBBJoinUrl } from '@/lib/bbb'
+import { verifyAdminSession } from '@/lib/dal'
 
 interface RouteContext {
   params: Promise<{ meetingId: string }>
@@ -13,7 +14,7 @@ const JoinSchema = z.object({
 })
 
 // POST /api/meetings/[meetingId]/join
-// Public access: allows external attendees to join BBB meeting without any PulseEdu account
+// Authenticated admins join as Host (moderator). Unauthenticated participants join as Guest (attendee).
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { meetingId } = await context.params
@@ -37,14 +38,22 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: 'Meeting not found' }, { status: 404 })
     }
 
-    // If meeting has attendeePassword and user provided password, check it
-    if (meeting.attendeePassword && password) {
-      if (password.trim() !== meeting.attendeePassword.trim()) {
-        return NextResponse.json({ error: 'Incorrect meeting password' }, { status: 403 })
+    // Check if the current user is an authenticated Admin (Host)
+    const auth = await verifyAdminSession()
+    const isHost = Boolean(auth?.isAuth)
+
+    // Unauthenticated guests must provide attendee password if one is required
+    if (!isHost) {
+      if (meeting.attendeePassword && password) {
+        if (password.trim() !== meeting.attendeePassword.trim()) {
+          return NextResponse.json({ error: 'Incorrect meeting password' }, { status: 403 })
+        }
+      } else if (meeting.attendeePassword && !password) {
+        return NextResponse.json({ error: 'Meeting password is required' }, { status: 403 })
       }
     }
 
-    // Ensure meeting is created on BBB server
+    // Ensure meeting exists on BBB server
     await createBBBMeeting({
       meetingId: meeting.meetingId,
       name: meeting.name,
@@ -55,16 +64,22 @@ export async function POST(request: Request, context: RouteContext) {
       isRecorded: meeting.isRecorded,
     })
 
-    // Generate BBB join URL with attendee password
+    // Authenticated admin joins with moderatorPassword (Host)
+    // Guest joins with attendeePassword (Guest)
+    const joinPassword = isHost ? meeting.moderatorPassword : meeting.attendeePassword
+    const hostName = auth?.user?.name || 'Meeting Host'
+    const effectiveName = displayName || (isHost ? hostName : 'Guest Participant')
+
     const joinUrl = getBBBJoinUrl({
       meetingId: meeting.meetingId,
-      fullName: displayName,
-      password: meeting.attendeePassword,
+      fullName: effectiveName,
+      password: joinPassword,
     })
 
     return NextResponse.json({
       success: true,
       joinUrl,
+      role: isHost ? 'host' : 'guest',
     })
   } catch (error) {
     console.error('Participant join error:', error)

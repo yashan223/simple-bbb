@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { Video, Shield, User, KeyRound, AlertCircle, ArrowRight, Loader2, Info } from 'lucide-react'
+import { Shield, User, KeyRound, AlertCircle, ArrowRight, Loader2, Sparkles, LayoutDashboard } from 'lucide-react'
 
 interface PublicMeetingInfo {
   name: string
@@ -11,6 +12,11 @@ interface PublicMeetingInfo {
   welcomeMessage: string | null
   isRecorded: boolean
   hasPassword: boolean
+  isAuthenticated: boolean
+  adminUser: {
+    name: string
+    email: string
+  } | null
 }
 
 export default function JoinMeetingPage() {
@@ -39,6 +45,9 @@ export default function JoinMeetingPage() {
         }
 
         setMeeting(data)
+        if (data.isAuthenticated && data.adminUser?.name) {
+          setDisplayName(data.adminUser.name)
+        }
       } catch (err) {
         console.error('Failed to load meeting:', err)
         setError('Network error while connecting to meeting.')
@@ -82,7 +91,7 @@ export default function JoinMeetingPage() {
       }
 
       if (data.joinUrl) {
-        // Redirect participant directly to BigBlueButton meeting room
+        // Redirect directly into BigBlueButton meeting room
         window.location.href = data.joinUrl
       } else {
         setJoinError('Invalid response from meeting server')
@@ -100,7 +109,7 @@ export default function JoinMeetingPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-300">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
-          <span className="text-sm font-medium">Connecting to PulseEdu BigBlueButton Session...</span>
+          <span className="text-sm font-medium">Connecting to PulseEdu Virtual Classroom...</span>
         </div>
       </div>
     )
@@ -118,17 +127,19 @@ export default function JoinMeetingPage() {
             {error || 'This meeting link is invalid or the session has ended.'}
           </p>
           <div className="pt-2">
-            <a
+            <Link
               href="/login"
               className="text-xs text-indigo-400 hover:text-indigo-300 underline font-medium"
             >
-              Are you an administrator? Sign in here.
-            </a>
+              Sign in as an administrator
+            </Link>
           </div>
         </div>
       </div>
     )
   }
+
+  const isHost = meeting.isAuthenticated
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -167,18 +178,38 @@ export default function JoinMeetingPage() {
             {meeting.isRecorded && (
               <div className="text-[11px] text-amber-400/90 pt-1 flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span>Notice: This session may be recorded by the moderator.</span>
+                <span>Notice: This session may be recorded by the host.</span>
               </div>
             )}
           </div>
 
-          {/* Guest Notice */}
-          <div className="flex items-start gap-2.5 bg-indigo-500/10 border border-indigo-500/20 p-3 rounded-lg text-xs text-indigo-300">
-            <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
-            <span>
-              <strong>Guest Participant:</strong> No PulseEdu account or registration required. Simply enter your display name to join.
-            </span>
-          </div>
+          {/* Host vs Guest Status Banner */}
+          {isHost ? (
+            <div className="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl text-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 font-bold text-emerald-400">
+                  <Shield className="w-4 h-4" />
+                  Authenticated as Host
+                </span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full">
+                  Moderator Privileges
+                </span>
+              </div>
+              <p className="text-slate-300 text-[11px] leading-relaxed">
+                Signed in as <strong className="text-white">{meeting.adminUser?.name}</strong> ({meeting.adminUser?.email}). You will join with full host and moderator controls.
+              </p>
+            </div>
+          ) : (
+            <div className="bg-slate-950/50 border border-slate-800 p-3 rounded-lg text-xs text-slate-400 flex items-center justify-between">
+              <span>Joining as: <strong className="text-slate-200">Guest Participant</strong></span>
+              <Link
+                href="/login"
+                className="text-indigo-400 hover:text-indigo-300 underline font-medium text-[11px]"
+              >
+                Host login
+              </Link>
+            </div>
+          )}
 
           {joinError && (
             <div className="rounded-lg bg-rose-500/10 border border-rose-500/30 p-3 text-xs text-rose-300 flex items-center gap-2">
@@ -193,7 +224,7 @@ export default function JoinMeetingPage() {
                 htmlFor="displayName"
                 className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1"
               >
-                Your Display Name *
+                {isHost ? 'Host Display Name *' : 'Your Display Name *'}
               </label>
               <div className="relative rounded-lg shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -203,7 +234,7 @@ export default function JoinMeetingPage() {
                   id="displayName"
                   type="text"
                   required
-                  placeholder="e.g. Alex Johnson"
+                  placeholder={isHost ? 'Host Name' : 'e.g. Alex Johnson'}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="block w-full pl-9 pr-3 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
@@ -211,13 +242,14 @@ export default function JoinMeetingPage() {
               </div>
             </div>
 
-            {meeting.hasPassword && (
+            {/* Guests only see password if meeting requires password and user is NOT the host */}
+            {!isHost && meeting.hasPassword && (
               <div>
                 <label
                   htmlFor="meetingPassword"
                   className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1"
                 >
-                  Meeting Password (If Required)
+                  Meeting Password
                 </label>
                 <div className="relative rounded-lg shadow-sm">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
@@ -226,6 +258,7 @@ export default function JoinMeetingPage() {
                   <input
                     id="meetingPassword"
                     type="password"
+                    required
                     placeholder="Enter attendee password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -238,7 +271,11 @@ export default function JoinMeetingPage() {
             <button
               type="submit"
               disabled={joining}
-              className="w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 transition cursor-pointer"
+              className={`w-full flex justify-center items-center gap-2 py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 transition cursor-pointer ${
+                isHost
+                  ? 'bg-emerald-600 hover:bg-emerald-500 focus:ring-emerald-500 shadow-emerald-900/30'
+                  : 'bg-indigo-600 hover:bg-indigo-500 focus:ring-indigo-500 shadow-indigo-900/30'
+              }`}
             >
               {joining ? (
                 <>
@@ -247,12 +284,34 @@ export default function JoinMeetingPage() {
                 </>
               ) : (
                 <>
-                  <span>Join Meeting Now</span>
-                  <ArrowRight className="w-4 h-4" />
+                  {isHost ? (
+                    <>
+                      <Sparkles className="w-4 h-4 text-emerald-200" />
+                      <span>Join Meeting as Host</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  ) : (
+                    <>
+                      <span>Join Meeting as Guest</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
                 </>
               )}
             </button>
           </form>
+
+          {isHost && (
+            <div className="pt-2 text-center">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 transition"
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Return to Admin Dashboard</span>
+              </Link>
+            </div>
+          )}
 
           <div className="pt-4 border-t border-slate-800 text-center text-[11px] text-slate-500">
             Powered by BigBlueButton™ and PulseEdu
