@@ -92,6 +92,8 @@ export async function createBBBMeeting({
     moderatorPW: moderatorPassword,
     welcome: welcomeMessage || `Welcome to ${name}!`,
     record: isRecorded ? 'true' : 'false',
+    autoStartRecording: isRecorded ? 'true' : 'false',
+    allowStartStopRecording: 'true',
     maxParticipants: maxParticipants && maxParticipants > 0 ? maxParticipants : undefined,
     meetingExpireWhenLastUserLeftInMinutes: 3,
   })
@@ -234,6 +236,7 @@ export interface BBBRecording {
   meetingId: string
   name: string
   published: boolean
+  state?: string
   startTime: number
   endTime: number
   playbackUrl?: string
@@ -241,7 +244,7 @@ export interface BBBRecording {
 }
 
 export async function getBBBRecordings(meetingId?: string): Promise<BBBRecording[]> {
-  const params: Record<string, string> = {}
+  const params: Record<string, string> = { state: 'any' }
   if (meetingId) params.meetingID = meetingId
 
   const url = buildBBBUrl('getRecordings', params)
@@ -260,6 +263,7 @@ export async function getBBBRecordings(meetingId?: string): Promise<BBBRecording
       const meetingIdMatch = block.match(/<meetingID>([^<]+)<\/meetingID>/)
       const nameMatch = block.match(/<name>([^<]+)<\/name>/)
       const publishedMatch = block.match(/<published>([^<]+)<\/published>/)
+      const stateMatch = block.match(/<state>([^<]+)<\/state>/)
       const startTimeMatch = block.match(/<startTime>([^<]+)<\/startTime>/)
       const endTimeMatch = block.match(/<endTime>([^<]+)<\/endTime>/)
       const urlMatch = block.match(/<url>([^<]+)<\/url>/)
@@ -271,6 +275,7 @@ export async function getBBBRecordings(meetingId?: string): Promise<BBBRecording
           meetingId: meetingIdMatch[1],
           name: nameMatch ? nameMatch[1] : 'Meeting Session Recording',
           published: publishedMatch ? publishedMatch[1] === 'true' : true,
+          state: stateMatch ? stateMatch[1] : 'published',
           startTime: startTimeMatch ? Number(startTimeMatch[1]) : Date.now(),
           endTime: endTimeMatch ? Number(endTimeMatch[1]) : Date.now(),
           playbackUrl: urlMatch ? urlMatch[1] : undefined,

@@ -58,6 +58,7 @@ interface Recording {
   meetingId: string
   name: string
   published: boolean
+  state?: string
   startTime: number
   endTime: number
   playbackUrl?: string
@@ -84,7 +85,7 @@ export default function DashboardPage() {
   const [meetingName, setMeetingName] = useState('')
   const [attendeePassword, setAttendeePassword] = useState('')
   const [welcomeMessage, setWelcomeMessage] = useState('')
-  const [isRecorded, setIsRecorded] = useState(false)
+  const [isRecorded, setIsRecorded] = useState(true)
   const [meetingSubmitting, setMeetingSubmitting] = useState(false)
   const [meetingError, setMeetingError] = useState<string | null>(null)
 
@@ -124,6 +125,7 @@ export default function DashboardPage() {
     fetchInitialData()
     const interval = setInterval(() => {
       syncMeetings()
+      fetchRecordings(false)
     }, 8000)
     return () => clearInterval(interval)
   }, [])
@@ -172,8 +174,9 @@ export default function DashboardPage() {
     }
   }
 
-  async function fetchRecordings() {
-    setRecordingsLoading(true)
+  async function fetchRecordings(showSpinner?: boolean | unknown) {
+    const shouldSpin = typeof showSpinner === 'boolean' ? showSpinner : true
+    if (shouldSpin) setRecordingsLoading(true)
     try {
       const res = await fetch('/api/admin/recordings')
       if (res.ok) {
@@ -183,7 +186,7 @@ export default function DashboardPage() {
     } catch (err) {
       console.error('Failed to load recordings:', err)
     } finally {
-      setRecordingsLoading(false)
+      if (shouldSpin) setRecordingsLoading(false)
     }
   }
 
@@ -226,7 +229,7 @@ export default function DashboardPage() {
       setMeetingName('')
       setAttendeePassword('')
       setWelcomeMessage('')
-      setIsRecorded(false)
+      setIsRecorded(true)
       setShowCreateMeeting(false)
     } catch (err) {
       console.error('Create meeting error:', err)
@@ -1069,9 +1072,16 @@ export default function DashboardPage() {
                               <h4 className="text-base font-bold text-slate-900">
                                 {rec.name}
                               </h4>
-                              <span className="text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full">
-                                Processed
-                              </span>
+                              {rec.playbackUrl ? (
+                                <span className="text-[10px] font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-full">
+                                  Processed
+                                </span>
+                              ) : (
+                                <span className="text-[10px] font-semibold bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                  <Loader2 className="w-3 h-3 animate-spin text-amber-600" />
+                                  Processing
+                                </span>
+                              )}
                             </div>
                             <div className="text-xs text-slate-500 flex items-center gap-3 mt-1">
                               <span className="font-mono text-slate-400">ID: {rec.recordId}</span>
