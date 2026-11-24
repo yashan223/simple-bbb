@@ -13,7 +13,9 @@ import {
   AlertCircle,
   Clock,
   LayoutDashboard,
-  Loader2
+  Loader2,
+  Eye,
+  EyeOff
 } from 'lucide-react'
 
 interface PublicMeetingInfo {
@@ -42,6 +44,7 @@ export default function JoinMeetingPage() {
 
   const [displayName, setDisplayName] = useState('')
   const [password, setPassword] = useState('')
+  const [showMeetingPassword, setShowMeetingPassword] = useState(false)
   const [joining, setJoining] = useState(false)
   const [joinError, setJoinError] = useState<string | null>(null)
 
@@ -299,13 +302,21 @@ export default function JoinMeetingPage() {
                   </div>
                   <input
                     id="meetingPassword"
-                    type="password"
+                    type={showMeetingPassword ? 'text' : 'password'}
                     required
                     placeholder="Enter attendee password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm transition"
+                    className="block w-full pl-9 pr-10 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm transition"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowMeetingPassword(!showMeetingPassword)}
+                    aria-label={showMeetingPassword ? 'Hide password' : 'Show password'}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+                  >
+                    {showMeetingPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
                 </div>
               </div>
             )}

@@ -16,6 +16,13 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized: Admin authentication required' }, { status: 401 })
   }
 
+  if (!auth.user.isDefaultAdmin) {
+    return NextResponse.json(
+      { error: 'Forbidden: Only the primary default administrator can access user management' },
+      { status: 403 }
+    )
+  }
+
   try {
     const users = await prisma.user.findMany({
       select: {

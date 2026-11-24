@@ -27,7 +27,10 @@ import {
   PowerOff,
   Edit3,
   Lock,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  EyeOff,
+  Search
 } from 'lucide-react'
 
 interface AdminUser {
@@ -77,13 +80,14 @@ export default function DashboardPage() {
   const router = useRouter()
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(null)
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState<'meetings' | 'recordings' | 'admins'>('meetings')
+  const [activeTab, setActiveTab] = useState<'meetings' | 'recordings' | 'users'>('meetings')
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   const [meetings, setMeetings] = useState<Meeting[]>([])
   const [showCreateMeeting, setShowCreateMeeting] = useState(false)
   const [meetingName, setMeetingName] = useState('')
   const [attendeePassword, setAttendeePassword] = useState('')
+  const [showAttendeePassword, setShowAttendeePassword] = useState(false)
   const [welcomeMessage, setWelcomeMessage] = useState('')
   const [isRecorded, setIsRecorded] = useState(true)
   const [meetingSubmitting, setMeetingSubmitting] = useState(false)
@@ -96,10 +100,12 @@ export default function DashboardPage() {
   const [recordingsLoading, setRecordingsLoading] = useState(false)
 
   const [admins, setAdmins] = useState<AdminUser[]>([])
+  const [userSearchQuery, setUserSearchQuery] = useState('')
   const [showCreateAdmin, setShowCreateAdmin] = useState(false)
   const [newAdminName, setNewAdminName] = useState('')
   const [newAdminEmail, setNewAdminEmail] = useState('')
   const [newAdminPassword, setNewAdminPassword] = useState('')
+  const [showNewAdminPassword, setShowNewAdminPassword] = useState(false)
   const [adminSubmitting, setAdminSubmitting] = useState(false)
   const [adminError, setAdminError] = useState<string | null>(null)
   const [adminSuccess, setAdminSuccess] = useState<string | null>(null)
@@ -107,6 +113,7 @@ export default function DashboardPage() {
   const [editingAdmin, setEditingAdmin] = useState<AdminUser | null>(null)
   const [editAdminName, setEditAdminName] = useState('')
   const [editAdminPassword, setEditAdminPassword] = useState('')
+  const [showEditAdminPassword, setShowEditAdminPassword] = useState(false)
   const [editAdminSubmitting, setEditAdminSubmitting] = useState(false)
   const [editAdminError, setEditAdminError] = useState<string | null>(null)
   const [editAdminSuccess, setEditAdminSuccess] = useState<string | null>(null)
@@ -162,10 +169,12 @@ export default function DashboardPage() {
 
       fetchRecordings()
 
-      const adminsRes = await fetch('/api/admin/users')
-      if (adminsRes.ok) {
-        const adminsData = await adminsRes.json()
-        setAdmins(adminsData.users || [])
+      if (meData.user?.isDefaultAdmin) {
+        const adminsRes = await fetch('/api/admin/users')
+        if (adminsRes.ok) {
+          const adminsData = await adminsRes.json()
+          setAdmins(adminsData.users || [])
+        }
       }
     } catch (err) {
       console.error('Failed to load dashboard data:', err)
@@ -368,11 +377,12 @@ export default function DashboardPage() {
         return
       }
 
-      setAdminSuccess(`Admin account for ${data.user.email} created successfully.`)
+      setAdminSuccess(`User account for ${data.user.email} created successfully.`)
       setAdmins([data.user, ...admins])
       setNewAdminName('')
       setNewAdminEmail('')
       setNewAdminPassword('')
+      setShowNewAdminPassword(false)
       setTimeout(() => setShowCreateAdmin(false), 2000)
     } catch (err) {
       console.error('Create admin error:', err)
@@ -386,6 +396,7 @@ export default function DashboardPage() {
     setEditingAdmin(admin)
     setEditAdminName(admin.name)
     setEditAdminPassword('')
+    setShowEditAdminPassword(false)
     setEditAdminError(null)
     setEditAdminSuccess(null)
   }
@@ -618,31 +629,33 @@ export default function DashboardPage() {
               </span>
             </button>
 
-            <button
-              onClick={() => {
-                setActiveTab('admins')
-                setSidebarOpen(false)
-              }}
-              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
-                activeTab === 'admins'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <Users className="w-4 h-4" />
-                <span>Admin Accounts</span>
-              </div>
-              <span
-                className={`text-xs px-2 py-0.5 rounded-full font-mono ${
-                  activeTab === 'admins'
-                    ? 'bg-indigo-500/30 text-white'
-                    : 'bg-slate-100 text-slate-600 border border-slate-200'
+            {currentUser?.isDefaultAdmin && (
+              <button
+                onClick={() => {
+                  setActiveTab('users')
+                  setSidebarOpen(false)
+                }}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition cursor-pointer ${
+                  activeTab === 'users'
+                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                 }`}
               >
-                {admins.length}
-              </span>
-            </button>
+                <div className="flex items-center gap-3">
+                  <Users className="w-4 h-4" />
+                  <span>User Management</span>
+                </div>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full font-mono ${
+                    activeTab === 'users'
+                      ? 'bg-indigo-500/30 text-white'
+                      : 'bg-slate-100 text-slate-600 border border-slate-200'
+                  }`}
+                >
+                  {admins.length}
+                </span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -709,17 +722,17 @@ export default function DashboardPage() {
                     <span>Session Recordings</span>
                   </>
                 )}
-                {activeTab === 'admins' && (
+                {activeTab === 'users' && (
                   <>
                     <Users className="w-4 h-4 text-indigo-600" />
-                    <span>Administrator Accounts</span>
+                    <span>User Management</span>
                   </>
                 )}
               </h2>
               <p className="text-[11px] text-slate-500 hidden sm:block">
                 {activeTab === 'meetings' && 'Create, launch, manage, and end BigBlueButton sessions'}
                 {activeTab === 'recordings' && 'View, playback, and manage recorded meeting sessions'}
-                {activeTab === 'admins' && 'Provision and manage platform administrators'}
+                {activeTab === 'users' && 'Provision, view, update, and manage system users and administrator accounts'}
               </p>
             </div>
           </div>
@@ -746,13 +759,13 @@ export default function DashboardPage() {
               </button>
             )}
 
-            {activeTab === 'admins' && currentUser?.isDefaultAdmin && (
+            {activeTab === 'users' && currentUser?.isDefaultAdmin && (
               <button
                 onClick={() => setShowCreateAdmin(!showCreateAdmin)}
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Add Admin Account</span>
+                <span>Add New User</span>
               </button>
             )}
           </div>
@@ -800,13 +813,25 @@ export default function DashboardPage() {
                         <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                           Attendee Password (Optional)
                         </label>
-                        <input
-                          type="text"
-                          placeholder="Attendee password (optional)"
-                          value={attendeePassword}
-                          onChange={(e) => setAttendeePassword(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                        />
+                        <div className="relative rounded-lg shadow-sm">
+                          <input
+                            type={showAttendeePassword ? 'text' : 'password'}
+                            placeholder="Attendee password (optional)"
+                            value={attendeePassword}
+                            onChange={(e) => setAttendeePassword(e.target.value)}
+                            className="w-full pl-3 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                          />
+                          {attendeePassword && (
+                            <button
+                              type="button"
+                              onClick={() => setShowAttendeePassword(!showAttendeePassword)}
+                              aria-label={showAttendeePassword ? 'Hide password' : 'Show password'}
+                              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+                            >
+                              {showAttendeePassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                            </button>
+                          )}
+                        </div>
                         <span className="text-[11px] text-slate-500">
                           Guests use this to enter.
                         </span>
@@ -1152,213 +1177,266 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {activeTab === 'admins' && (
+            {activeTab === 'users' && (
               <div className="space-y-6">
 
-                {!currentUser?.isDefaultAdmin && (
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-3">
-                    <Lock className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>
-                      Only the primary default administrator (<strong className="font-semibold text-amber-950">admin@pulseedu.online</strong>) can provision new admin accounts or edit the default administrator account.
-                    </span>
+                {!currentUser?.isDefaultAdmin ? (
+                  <div className="p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-sm flex items-start gap-4">
+                    <Lock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <h4 className="font-bold text-amber-950">Access Restricted</h4>
+                      <p className="text-xs text-amber-800 leading-relaxed">
+                        User Management is exclusively available to the primary default administrator (<strong className="font-semibold text-amber-950">admin@pulseedu.online</strong>). Only the default administrator can provision, modify, or delete user accounts.
+                      </p>
+                    </div>
                   </div>
-                )}
+                ) : (
+                  <>
+                    <div className="bg-linear-to-r from-indigo-50/80 to-purple-50/50 border border-indigo-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-5 h-5 text-amber-600" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                            <span>Primary Administrator Console</span>
+                            <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
+                              Full Access
+                            </span>
+                          </h4>
+                          <p className="text-xs text-slate-600">
+                            You have exclusive authority to provision new user accounts, update credentials, and manage system administrators.
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setShowCreateAdmin(!showCreateAdmin)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition cursor-pointer shrink-0"
+                      >
+                        <Plus className="w-4 h-4" />
+                        <span>{showCreateAdmin ? 'Close Form' : 'Add New User'}</span>
+                      </button>
+                    </div>
 
-                {showCreateAdmin && currentUser?.isDefaultAdmin && (
-                  <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md animate-in fade-in">
-                    <h3 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
-                      <ShieldCheck className="w-4 h-4 text-amber-500" />
-                      Provision Additional Admin Account
-                    </h3>
-                    <p className="text-xs text-slate-500 mb-6">
-                      Only the primary default administrator can provision new administrator accounts. Visitors cannot self-register.
-                    </p>
+                    {showCreateAdmin && (
+                      <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md animate-in fade-in">
+                        <h3 className="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
+                          <ShieldCheck className="w-4 h-4 text-amber-500" />
+                          Provision New User / Administrator Account
+                        </h3>
+                        <p className="text-xs text-slate-500 mb-6">
+                          Fill in the details below to provision a new user account with administrative privileges.
+                        </p>
 
-                    {adminError && (
-                      <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
-                        <span>{adminError}</span>
+                        {adminError && (
+                          <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-500" />
+                            <span>{adminError}</span>
+                          </div>
+                        )}
+
+                        {adminSuccess && (
+                          <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                            <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
+                            <span>{adminSuccess}</span>
+                          </div>
+                        )}
+
+                        <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                              Full Name *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. John Doe"
+                              value={newAdminName}
+                              onChange={(e) => setNewAdminName(e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                              Email Address *
+                            </label>
+                            <input
+                              type="email"
+                              required
+                              placeholder="e.g. user@pulseedu.online"
+                              value={newAdminEmail}
+                              onChange={(e) => setNewAdminEmail(e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
+                              Initial Password *
+                            </label>
+                            <div className="relative rounded-lg shadow-sm">
+                              <input
+                                type={showNewAdminPassword ? 'text' : 'password'}
+                                required
+                                placeholder="Min 8 characters"
+                                value={newAdminPassword}
+                                onChange={(e) => setNewAdminPassword(e.target.value)}
+                                className="w-full pl-3 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowNewAdminPassword(!showNewAdminPassword)}
+                                aria-label={showNewAdminPassword ? 'Hide password' : 'Show password'}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+                              >
+                                {showNewAdminPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="sm:col-span-3 flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
+                            <button
+                              type="button"
+                              onClick={() => setShowCreateAdmin(false)}
+                              className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="submit"
+                              disabled={adminSubmitting}
+                              className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer shadow-sm shadow-indigo-600/20"
+                            >
+                              {adminSubmitting ? 'Creating User...' : 'Create User Account'}
+                            </button>
+                          </div>
+                        </form>
                       </div>
                     )}
 
-                    {adminSuccess && (
-                      <div className="mb-4 p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
-                        <Check className="w-4 h-4 flex-shrink-0 text-emerald-600" />
-                        <span>{adminSuccess}</span>
-                      </div>
-                    )}
-
-                    <form onSubmit={handleCreateAdmin} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                          Full Name *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="Admin name"
-                          value={newAdminName}
-                          onChange={(e) => setNewAdminName(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                        />
+                    <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm space-y-4 p-5">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4 text-indigo-600" />
+                          <h4 className="text-sm font-bold text-slate-900">
+                            Platform Users ({admins.length})
+                          </h4>
+                        </div>
+                        <div className="relative w-full sm:w-72">
+                          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          <input
+                            type="text"
+                            placeholder="Search by name or email..."
+                            value={userSearchQuery}
+                            onChange={(e) => setUserSearchQuery(e.target.value)}
+                            className="w-full pl-9 pr-3 py-1.5 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-xs placeholder-slate-400 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                          />
+                        </div>
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                          Email Address *
-                        </label>
-                        <input
-                          type="email"
-                          required
-                          placeholder="Email address"
-                          value={newAdminEmail}
-                          onChange={(e) => setNewAdminEmail(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
-                          Initial Password *
-                        </label>
-                        <input
-                          type="password"
-                          required
-                          placeholder="Min 8 characters"
-                          value={newAdminPassword}
-                          onChange={(e) => setNewAdminPassword(e.target.value)}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                        />
-                      </div>
-
-                      <div className="sm:col-span-3 flex items-center justify-end gap-3 pt-3 border-t border-slate-200">
-                        <button
-                          type="button"
-                          onClick={() => setShowCreateAdmin(false)}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={adminSubmitting}
-                          className="px-4 py-2 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white transition disabled:opacity-50 cursor-pointer shadow-sm shadow-indigo-600/20"
-                        >
-                          {adminSubmitting ? 'Creating Admin...' : 'Create Admin Account'}
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                )}
-
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                  <div className="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                      <Users className="w-4 h-4 text-indigo-600" />
-                      Active Administrators ({admins.length})
-                    </h4>
-                  </div>
-
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
-                        <tr>
-                          <th className="py-3 px-5">Administrator</th>
-                          <th className="py-3 px-5">Email</th>
-                          <th className="py-3 px-5">Account Type</th>
-                          <th className="py-3 px-5">Created Date</th>
-                          <th className="py-3 px-5 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {admins.map((admin) => (
-                          <tr key={admin.id} className="hover:bg-slate-50/80 transition">
-                            <td className="py-3 px-5 font-semibold text-slate-900 flex items-center gap-2.5">
-                              <div className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
-                                admin.isDefaultAdmin
-                                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                                  : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
-                              }`}>
-                                {admin.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span>{admin.name}</span>
-                              {admin.id === currentUser?.id && (
-                                <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-medium">
-                                  You
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-5 text-slate-600 font-mono">
-                              {admin.email}
-                            </td>
-                            <td className="py-3 px-5">
-                              {admin.isDefaultAdmin ? (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full">
-                                  <ShieldCheck className="w-3 h-3 text-amber-600" />
-                                  Default Admin
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-0.5 rounded-full">
-                                  <Shield className="w-3 h-3 text-indigo-600" />
-                                  Admin
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-3 px-5 text-slate-500">
-                              {new Date(admin.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="py-3 px-5 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
-                                {admin.isDefaultAdmin ? (
-                                  currentUser?.isDefaultAdmin ? (
-                                    <button
-                                      onClick={() => openEditAdmin(admin)}
-                                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 transition cursor-pointer shadow-xs"
-                                      title="Edit Default Administrator"
+                      <div className="overflow-x-auto -mx-5 -mb-5">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
+                            <tr>
+                              <th className="py-3 px-5">User Account</th>
+                              <th className="py-3 px-5">Email Address</th>
+                              <th className="py-3 px-5">Role / Access</th>
+                              <th className="py-3 px-5">Created Date</th>
+                              <th className="py-3 px-5 text-right">Actions</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {admins
+                              .filter((admin) => {
+                                if (!userSearchQuery.trim()) return true
+                                const q = userSearchQuery.toLowerCase()
+                                return (
+                                  admin.name.toLowerCase().includes(q) ||
+                                  admin.email.toLowerCase().includes(q)
+                                )
+                              })
+                              .map((admin) => (
+                                <tr key={admin.id} className="hover:bg-slate-50/80 transition">
+                                  <td className="py-3 px-5 font-semibold text-slate-900 flex items-center gap-2.5">
+                                    <div
+                                      className={`w-7 h-7 rounded-full font-bold flex items-center justify-center text-xs ${
+                                        admin.isDefaultAdmin
+                                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                                          : 'bg-indigo-50 text-indigo-700 border border-indigo-200'
+                                      }`}
                                     >
-                                      <Edit3 className="w-3 h-3 text-amber-600" />
-                                      <span>Edit</span>
-                                    </button>
-                                  ) : (
-                                    <span
-                                      className="inline-flex items-center gap-1 text-[11px] text-slate-400 font-medium"
-                                      title="Only the default administrator can edit this account"
-                                    >
-                                      <Lock className="w-3 h-3 text-slate-400" />
-                                      <span>Protected</span>
-                                    </span>
-                                  )
-                                ) : (
-                                  <>
-                                    {(currentUser?.isDefaultAdmin || currentUser?.id === admin.id) && (
+                                      {admin.name.charAt(0).toUpperCase()}
+                                    </div>
+                                    <span>{admin.name}</span>
+                                    {admin.id === currentUser?.id && (
+                                      <span className="text-[10px] bg-slate-100 text-slate-600 border border-slate-200 px-1.5 py-0.5 rounded font-medium">
+                                        You
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-5 text-slate-600 font-mono">
+                                    {admin.email}
+                                  </td>
+                                  <td className="py-3 px-5">
+                                    {admin.isDefaultAdmin ? (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-amber-50 border border-amber-200 text-amber-800 px-2.5 py-0.5 rounded-full">
+                                        <ShieldCheck className="w-3 h-3 text-amber-600" />
+                                        Default Admin
+                                      </span>
+                                    ) : (
+                                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold bg-indigo-50 border border-indigo-200 text-indigo-700 px-2.5 py-0.5 rounded-full">
+                                        <Shield className="w-3 h-3 text-indigo-600" />
+                                        Administrator
+                                      </span>
+                                    )}
+                                  </td>
+                                  <td className="py-3 px-5 text-slate-500">
+                                    {new Date(admin.createdAt).toLocaleDateString()}
+                                  </td>
+                                  <td className="py-3 px-5 text-right">
+                                    <div className="flex items-center justify-end gap-1.5">
                                       <button
                                         onClick={() => openEditAdmin(admin)}
                                         className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-700 text-xs font-medium border border-slate-200 transition cursor-pointer shadow-xs"
-                                        title="Edit Administrator"
+                                        title={admin.isDefaultAdmin ? 'Edit Default Admin' : 'Edit User'}
                                       >
-                                        <Edit3 className="w-3 h-3 text-indigo-600" />
+                                        <Edit3 className={`w-3 h-3 ${admin.isDefaultAdmin ? 'text-amber-600' : 'text-indigo-600'}`} />
                                         <span>Edit</span>
                                       </button>
-                                    )}
-                                    {currentUser?.isDefaultAdmin && (
-                                      <button
-                                        onClick={() => promptDeleteAdmin(admin)}
-                                        className="p-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
-                                        title="Remove Administrator"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    )}
-                                  </>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
+                                      {!admin.isDefaultAdmin && admin.id !== currentUser?.id && (
+                                        <button
+                                          onClick={() => promptDeleteAdmin(admin)}
+                                          className="p-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition cursor-pointer shadow-xs"
+                                          title="Remove User"
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      )}
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            {admins.filter((admin) => {
+                              if (!userSearchQuery.trim()) return true
+                              const q = userSearchQuery.toLowerCase()
+                              return (
+                                admin.name.toLowerCase().includes(q) ||
+                                admin.email.toLowerCase().includes(q)
+                              )
+                            }).length === 0 && (
+                              <tr>
+                                <td colSpan={5} className="py-8 text-center text-slate-500">
+                                  No user accounts found matching "{userSearchQuery}".
+                                </td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             )}
           </div>
@@ -1432,13 +1510,25 @@ export default function DashboardPage() {
                 <label className="block text-xs font-semibold text-slate-700 uppercase mb-1">
                   New Password (Optional)
                 </label>
-                <input
-                  type="password"
-                  placeholder="Leave blank to keep current password"
-                  value={editAdminPassword}
-                  onChange={(e) => setEditAdminPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
-                />
+                <div className="relative rounded-lg shadow-sm">
+                  <input
+                    type={showEditAdminPassword ? 'text' : 'password'}
+                    placeholder="Leave blank to keep current password"
+                    value={editAdminPassword}
+                    onChange={(e) => setEditAdminPassword(e.target.value)}
+                    className="w-full pl-3 pr-10 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 text-sm focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none transition"
+                  />
+                  {editAdminPassword && (
+                    <button
+                      type="button"
+                      onClick={() => setShowEditAdminPassword(!showEditAdminPassword)}
+                      aria-label={showEditAdminPassword ? 'Hide password' : 'Show password'}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none transition cursor-pointer"
+                    >
+                      {showEditAdminPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  )}
+                </div>
                 <p className="text-[10px] text-slate-500 mt-1">Must be at least 8 characters if changing.</p>
               </div>
 
