@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { ThemeToggle } from '../components/ThemeToggle'
 import {
   Video,
   Users,
@@ -553,7 +554,7 @@ export default function DashboardPage() {
         <div className="flex flex-col flex-1 min-h-0">
 
           <div className="h-20 px-4 border-b border-slate-200 flex items-center justify-center relative">
-            <div className="flex items-center justify-center py-2">
+            <div className="flex items-center justify-center py-2 dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
               <Image
                 src="/logo-wide.png"
                 alt="PulseEdu"
@@ -770,7 +771,8 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle />
             {activeTab === 'meetings' && (
               <button
                 onClick={() => setShowCreateMeeting(!showCreateMeeting)}

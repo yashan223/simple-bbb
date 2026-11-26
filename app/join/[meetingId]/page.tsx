@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
+import { ThemeToggle } from '../../components/ThemeToggle'
 import {
   User,
   KeyRound,
@@ -189,17 +190,22 @@ export default function JoinMeetingPage() {
   const isHost = meeting.isAuthenticated
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 relative">
+      <div className="fixed top-4 right-4 z-30">
+        <ThemeToggle />
+      </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-3">
-          <Image
-            src="/logo-wide.png"
-            alt="PulseEdu"
-            width={200}
-            height={50}
-            className="h-10 w-auto object-contain drop-shadow-sm"
-            priority
-          />
+          <div className="dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
+            <Image
+              src="/logo-wide.png"
+              alt="PulseEdu"
+              width={200}
+              height={50}
+              className="h-10 w-auto object-contain drop-shadow-sm"
+              priority
+            />
+          </div>
         </div>
         <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Join BigBlueButton Session

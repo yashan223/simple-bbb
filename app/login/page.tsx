@@ -4,6 +4,7 @@ import React, { useState, Suspense } from 'react'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Lock, Mail, ShieldAlert, ArrowRight, Loader2, Eye, EyeOff } from 'lucide-react'
+import { ThemeToggle } from '../components/ThemeToggle'
 
 function LoginForm() {
   const router = useRouter()
@@ -137,17 +138,22 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
+      <div className="fixed top-4 right-4 z-30">
+        <ThemeToggle />
+      </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-4">
-          <Image
-            src="/logo-wide.png"
-            alt="PulseEdu"
-            width={240}
-            height={60}
-            priority
-            className="h-12 w-auto object-contain drop-shadow-sm"
-          />
+          <div className="dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
+            <Image
+              src="/logo-wide.png"
+              alt="PulseEdu"
+              width={240}
+              height={60}
+              priority
+              className="h-12 w-auto object-contain drop-shadow-sm"
+            />
+          </div>
         </div>
         <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Administrator Authentication Portal
