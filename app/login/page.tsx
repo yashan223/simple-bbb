@@ -144,16 +144,14 @@ export default function LoginPage() {
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-4">
-          <div className="dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
-            <Image
-              src="/logo-wide.png"
-              alt="PulseEdu"
-              width={240}
-              height={60}
-              priority
-              className="h-12 w-auto object-contain drop-shadow-sm"
-            />
-          </div>
+          <Image
+            src="/logo-wide.png"
+            alt="PulseEdu"
+            width={240}
+            height={60}
+            priority
+            className="h-12 w-auto object-contain drop-shadow-sm dark:brightness-0 dark:invert"
+          />
         </div>
         <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Administrator Authentication Portal

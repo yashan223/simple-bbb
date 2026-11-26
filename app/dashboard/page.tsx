@@ -554,13 +554,13 @@ export default function DashboardPage() {
         <div className="flex flex-col flex-1 min-h-0">
 
           <div className="h-20 px-4 border-b border-slate-200 flex items-center justify-center relative">
-            <div className="flex items-center justify-center py-2 dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
+            <div className="flex items-center justify-center py-2">
               <Image
                 src="/logo-wide.png"
                 alt="PulseEdu"
                 width={220}
                 height={60}
-                className="h-11 md:h-12 w-auto object-contain drop-shadow-sm"
+                className="h-11 md:h-12 w-auto object-contain drop-shadow-sm dark:brightness-0 dark:invert"
                 priority
               />
             </div>

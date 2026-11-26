@@ -196,16 +196,14 @@ export default function JoinMeetingPage() {
       </div>
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <div className="flex justify-center mb-3">
-          <div className="dark:bg-white/95 dark:px-3 dark:py-1.5 dark:rounded-xl">
-            <Image
-              src="/logo-wide.png"
-              alt="PulseEdu"
-              width={200}
-              height={50}
-              className="h-10 w-auto object-contain drop-shadow-sm"
-              priority
-            />
-          </div>
+          <Image
+            src="/logo-wide.png"
+            alt="PulseEdu"
+            width={200}
+            height={50}
+            className="h-10 w-auto object-contain drop-shadow-sm dark:brightness-0 dark:invert"
+            priority
+          />
         </div>
         <h1 className="text-xl font-bold tracking-tight text-slate-900">
           Join BigBlueButton Session
