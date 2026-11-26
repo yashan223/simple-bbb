@@ -1234,32 +1234,6 @@ export default function DashboardPage() {
                   </div>
                 ) : (
                   <>
-                    <div className="bg-linear-to-r from-indigo-50/80 to-purple-50/50 border border-indigo-100 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 border border-amber-300 flex items-center justify-center shrink-0">
-                          <ShieldCheck className="w-5 h-5 text-amber-600" />
-                        </div>
-                        <div>
-                          <h4 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                            <span>Primary Administrator Console</span>
-                            <span className="text-[10px] bg-amber-100 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-full font-semibold">
-                              Full Access
-                            </span>
-                          </h4>
-                          <p className="text-xs text-slate-600">
-                            You have exclusive authority to provision new user accounts, update credentials, and manage system administrators.
-                          </p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => setShowCreateAdmin(!showCreateAdmin)}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-md shadow-indigo-600/20 transition cursor-pointer shrink-0"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>{showCreateAdmin ? 'Close Form' : 'Add New User'}</span>
-                      </button>
-                    </div>
-
                     {showCreateAdmin && (
                       <div className="bg-white border border-indigo-200 rounded-2xl p-6 shadow-md animate-in fade-in">
                         <h3 className="text-base font-bold text-slate-900 mb-1 flex items-center gap-2">
