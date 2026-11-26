@@ -1034,10 +1034,6 @@ export default function DashboardPage() {
                               </span>
                             </div>
                           </div>
-
-                          <div className="text-[11px] text-indigo-600 font-medium">
-                            Public Join Link: <code className="bg-slate-200/80 px-1 py-0.5 rounded text-slate-800">/join/{meeting.meetingId}</code>
-                          </div>
                         </div>
                       </div>
                     ))}
