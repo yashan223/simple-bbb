@@ -96,7 +96,8 @@ export async function createBBBMeeting({
     autoStartRecording: isRecorded ? 'true' : 'false',
     allowStartStopRecording: 'true',
     maxParticipants: maxParticipants && maxParticipants > 0 ? maxParticipants : undefined,
-    meetingExpireWhenLastUserLeftInMinutes: 3,
+    meetingExpireWhenLastUserLeftInMinutes: 5,
+    meetingExpireIfNoUserJoinedInMinutes: 5,
   })
 
   const presentationBase64 = getPresentationBase64()
